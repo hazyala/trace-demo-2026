@@ -1,4 +1,5 @@
-import { Fragment, useEffect, useRef, useState, type CSSProperties, type ReactNode } from 'react'
+import { Plus, X, Check, ArrowRight, ArrowLeft, ChevronDown, UsersRound, UserRound, Settings, FilePenLine, ListChecks, LayoutDashboard, Menu, Save, Download } from 'lucide-react'
+import { Fragment, useEffect, useRef, useState, type ReactNode } from 'react'
 import { type Assignment as AssignmentType, initialAssignment, modes, readDraft, storageKey, suggestGoals, validateAssignment } from './assignment'
 import { StudentPreview } from './StudentPreview'
 import { OptionEditor } from './OptionEditor'
@@ -14,7 +15,7 @@ import './app.css'
 import './course.css'
 
 type IconName = 'plus' | 'close' | 'check' | 'right' | 'left' | 'down' | 'users' | 'user' | 'settings' | 'edit' | 'list' | 'grid' | 'menu' | 'save' | 'download'
-function Icon({ name }: { name: IconName }) { return <span aria-hidden="true" className="icon" style={{ '--icon': `url(/icons/${name}.svg)` } as CSSProperties} /> }
+function Icon({ name }: { name: IconName }) { const icons={plus:Plus,close:X,check:Check,right:ArrowRight,left:ArrowLeft,down:ChevronDown,users:UsersRound,user:UserRound,settings:Settings,edit:FilePenLine,list:ListChecks,grid:LayoutDashboard,menu:Menu,save:Save,download:Download};const Component=icons[name];return <Component size={20} strokeWidth={1.8} className="trace-icon" aria-hidden="true"/> }
 function Remove({ label, onClick }: { label: string; onClick: () => void }) { return <button type="button" className="icon-button remove" aria-label={label} onClick={onClick}><Icon name="close" /></button> }
 function Section({ title, number, action, children, className = '' }: { title: string; number: string; action?: ReactNode; children: ReactNode; className?: string }) { return <section className={`panel ${className}`}><div className="section-heading"><h2><span className={`section-number tone-${Number(number) % 5}`}>{number}</span>{title}</h2>{action}</div>{children}</section> }
 function App() {

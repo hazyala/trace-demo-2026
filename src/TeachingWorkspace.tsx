@@ -1,3 +1,4 @@
+import { readStudentGuidanceSummary } from './student'
 import { useRef, useState, type Dispatch, type SetStateAction } from 'react'
 import { type Assignment, demoStudents } from './assignment'
 import './teaching.css'
@@ -20,6 +21,7 @@ type Review = { judgments: Record<string, string>; feedback: string }
 function loadReviews(): Record<string, Review> { try { return JSON.parse(localStorage.getItem('trace-reviews') || '{}') || {} } catch { return {} } }
 
 export function TeachingWorkspace({ view, assignment, onNavigate, initialTarget = {}, decisions, onDecisions: setDecisions }: { view: TeachingView; assignment: Assignment; onNavigate: (view: TeachingView) => void; initialTarget?:TeachingTarget; decisions:Record<string,string>; onDecisions:Dispatch<SetStateAction<Record<string,string>>> }) {
+  const [connectedGuidance]=useState(readStudentGuidanceSummary)
   const [task, setTask] = useState(initialTarget.task || 'current')
   const [teamId, setTeamId] = useState(initialTarget.team || 2)
   const [student, setStudent] = useState(initialTarget.student || '이서연')
@@ -53,6 +55,7 @@ export function TeachingWorkspace({ view, assignment, onNavigate, initialTarget 
   return <div className="teaching-workspace">
     <div className="teaching-toolbar"><div className="task-selector"><label htmlFor="teaching-task">진행 중인 과제</label><select id="teaching-task" value={task} onChange={e => { setTask(e.target.value); setNotice('') }}><option value="current">{assignment.title}</option><option value="vlan">VLAN 분리 및 부서 간 통신 검증</option></select></div>{view === 'evaluation' ? <div className="student-picker"><div className="student-search"><label htmlFor="student-search">학생 검색</label><input id="student-search" type="search" placeholder="이름 또는 팀 검색" value={query} onChange={e => setQuery(e.target.value)} /></div><div className="student-dropdown"><label htmlFor="student-select">학생 선택 <span aria-live="polite">{matchedStudents.length}명</span></label><select id="student-select" value={matchedStudents.includes(student) ? student : ''} onChange={e => { setStudent(e.target.value); setNotice('') }}><option value="" disabled>{matchedStudents.length ? '학생을 선택하세요' : '검색 결과가 없습니다'}</option>{matchedStudents.map(name => <option key={name} value={name}>{name} · {teamOf(name)}팀 · {roleOf(name)}</option>)}</select></div></div> : <span className="snapshot-label">수업 현황 · {formatTime(snapshotMinutes)} 기준</span>}</div>
     <p className="teaching-demo">시연용 학생·수행 기록 · AI 요약은 교수자의 확인을 위한 참고 정보입니다.</p>
+    {view==='evaluation'&&<details className="connected-guidance panel"><summary>학생 워크스페이스 지원 요약 · 유송민</summary><p className="course-demo-note">네트워크 실습의 질문·수행 맥락에 따라 분류한 시연 기록입니다. 개인 대화 원문은 표시하지 않습니다.</p><div className="connected-guidance-levels">{connectedGuidance.map(g=><span key={g.level}><b>L{g.level}</b>{g.name}<strong>{g.count}회</strong></span>)}</div></details>}
     {notice && <div role="status" className="teaching-notice">{notice}<button type="button" aria-label="처리 알림 닫기" onClick={() => setNotice('')}>닫기</button></div>}
     {view === 'monitoring' ? <>
       <div className="monitor-metrics">{[['전체 팀', displayedTeams.length, 'mint'], ['정상 진행', displayedTeams.filter(t => t.status === '정상').length, 'mint'], ['확인 필요', displayedTeams.filter(t => ['확인 필요','지연'].includes(t.status)).length, 'yellow'], ['승인 대기', displayedTeams.filter(t => t.status === '승인 대기').length, 'lavender']].map(([label, count, color]) => <div className="panel metric" key={label}><span>{label}</span><strong>{count}<small>팀</small></strong><span className={`metric-swatch ${color}`} aria-hidden="true">{label === '전체 팀' ? <span className="icon icon-users" /> : label === '정상 진행' ? <span className="icon icon-check" /> : label === '확인 필요' ? '?' : <span className="icon icon-list" />}</span><div className="metric-segments" aria-hidden="true">{displayedTeams.map((t,i)=><i key={t.id} className={i < Number(count) ? String(color) : ''} />)}</div></div>)}</div>

@@ -152,6 +152,6 @@ test('양식 업로드, 옵션 편집과 사이드바', async ({ page }) => {
   await page.getByRole('button', {name:'수업 메뉴 열기', exact:true}).click()
   await expect(page.locator('.sidebar')).toBeVisible()
   await page.getByRole('button', {name:'프로필 전환', exact:true}).click()
-  await expect(page.getByRole('dialog')).toContainText('유송민')
-  await page.getByRole('button', {name:'닫기', exact:true}).click()
+  await expect(page.getByRole('region',{name:'프로필 전환'})).toContainText('유송민')
+  await page.keyboard.press('Escape')
 })
