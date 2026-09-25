@@ -4,7 +4,7 @@ test('과제 편집, 목표 가져오기, 검증, 운영 방식과 저장', asyn
   const errors: string[] = []
   page.on('pageerror', e => errors.push(e.message))
   await page.goto('/')
-  await expect(page.getByRole('heading', { name: '프로젝트 과제 생성' })).toBeVisible()
+  await expect(page.getByRole('heading', { name: '프로젝트 · 과제 생성' })).toBeVisible()
   await page.getByLabel('과제명', { exact: false }).fill('라우팅 경로 복구 실습')
   await page.getByRole('button', { name: '과목 설정에서 불러오기' }).click()
   await page.getByLabel('라우팅 테이블을 해석하고 패킷 전달 경로를 설명한다.').check()
@@ -66,7 +66,7 @@ test('화면 크기별 레이아웃과 데모 캡처', async ({ page }) => {
     await page.screenshot({path:`.impeccable/review/${name}.png`,fullPage:true})
     await page.getByRole('button', { name: 'AI 운영 방식 설정' }).click()
     await expect(page.getByRole('tab', { name: '교수자 승인형' })).toBeVisible()
-    await expect(page.getByRole('heading', {name:'프로젝트 과제 생성'})).toBeFocused()
+    await expect(page.getByRole('heading', {name:'프로젝트 · 과제 생성'})).toBeFocused()
     await page.evaluate(() => window.scrollTo(0, 0))
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
     await page.screenshot({path:`.impeccable/review/${name}-ai.png`,fullPage:true})
@@ -75,7 +75,7 @@ test('화면 크기별 레이아웃과 데모 캡처', async ({ page }) => {
     await page.screenshot({path:`.impeccable/review/${name}-preview.png`,fullPage:true})
     if (width < 1050) {
       await page.getByRole('button', { name: '수업 메뉴 열기' }).click()
-      await expect(page.getByRole('button', { name: '프로젝트 과제 생성', exact:true })).toBeVisible()
+      await expect(page.getByRole('button', { name: '프로젝트 · 과제 생성', exact:true })).toBeVisible()
       await page.locator('.mobile-close').click()
     }
   }

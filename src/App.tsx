@@ -55,7 +55,7 @@ function App() {
     reader.readAsDataURL(file)
   }
   const total = a.criteria.reduce((s, c) => s + c.weight, 0)
-  const nav: { label: string; icon: IconName }[] = [{ label: '수업 대시보드', icon: 'grid' }, { label: '프로젝트 과제 생성', icon: 'edit' }, { label: '학생별 평가 지원', icon: 'list' }, { label: '팀별 모니터링', icon: 'users' }, { label: '과목 설정', icon: 'settings' }]
+  const nav: { label: string; icon: IconName }[] = [{ label: '수업 대시보드', icon: 'grid' }, { label: '프로젝트 · 과제 생성', icon: 'edit' }, { label: '학생별 평가 지원', icon: 'list' }, { label: '팀별 모니터링', icon: 'users' }, { label: '과목 설정', icon: 'settings' }]
   return <div className={`app-shell ${sidebarCollapsed ? 'sidebar-collapsed' : ''}`}>
     <a className="skip-link" href="#main">본문으로 이동</a>
     {sidebarOpen && <button className="sidebar-backdrop" aria-label="메뉴 닫기" onClick={() => setSidebarOpen(false)} />}
@@ -68,7 +68,7 @@ function App() {
       <div className="profile"><a className="avatar" href="/mypage" aria-label="마이페이지" onClick={e => { e.preventDefault(); window.history.pushState({}, '', '/mypage'); setMessage('마이페이지는 준비 중입니다. 과제 작성을 계속할 수 있어요.') }}><Icon name="user" /></a><div><strong>한국 폴리텍</strong><span>강병준 교수님</span></div></div>
     </aside>
     <main id="main" className="main">
-      <header className="page-header"><div className="title-row"><button className="mobile-menu icon-button" aria-label="수업 메뉴 열기" aria-expanded={sidebarOpen} onClick={() => { setSidebarOpen(true); setSidebarCollapsed(false) }}><Icon name="menu" /></button><h1 ref={pageTitle} tabIndex={-1}>프로젝트 과제 생성</h1><span className="draft-badge">{created ? '생성 완료' : '작성 중'}</span></div><p>과제를 설계하고, 학생의 수행을 지원할 AI 운영 방식을 정하세요.</p></header>
+      <header className="page-header"><div className="title-row"><button className="mobile-menu icon-button" aria-label="수업 메뉴 열기" aria-expanded={sidebarOpen} onClick={() => { setSidebarOpen(true); setSidebarCollapsed(false) }}><Icon name="menu" /></button><h1 ref={pageTitle} tabIndex={-1}>프로젝트 · 과제 생성</h1><span className="draft-badge">{created ? '생성 완료' : '작성 중'}</span></div><p>과제를 설계하고, 학생의 수행을 지원할 AI 운영 방식을 정하세요.</p></header>
       <div className="workflow"><div className="step-tabs" aria-label="과제 생성 단계">{['과제 설계', 'AI 운영 방식', '학생 미리보기'].map((label,i) => <Fragment key={label}><button className={step === i+1 ? 'current' : step > i+1 ? 'complete' : ''} aria-current={step === i+1 ? 'step' : undefined} onClick={() => changeStep(i+1)}><span>{step > i+1 ? <Icon name="check" /> : i+1}</span>{label}</button>{i < 2 && <span className="step-connector" />}</Fragment>)}</div><span className="step-count">STEP {String(step).padStart(2, '0')} <span>/ 03</span></span></div>
       <form onSubmit={e => { e.preventDefault(); if (step < 3) changeStep(step + 1); else save(true) }} noValidate>
       {step === 1 ? <div className="design-grid">
