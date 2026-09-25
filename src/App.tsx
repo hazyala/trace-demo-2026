@@ -65,7 +65,7 @@ function App() {
       <label className="course-label" htmlFor="course">현재 수업</label>
       <div className="course-select"><select id="course" defaultValue="network"><option value="network">2학년 네트워크 실습</option></select><Icon name="down" /></div>
       <nav>{nav.map((item, i) => <button key={item.label} className={`nav-item ${i === 1 ? 'active' : ''}`} aria-current={i === 1 ? 'page' : undefined} onClick={() => { if (i === 1) { setSidebarOpen(false); changeStep(1) } else setMessage(`${item.label} 화면은 다음 데모에서 연결됩니다.`) }}><span className="nav-icon"><Icon name={item.icon} /></span>{item.label}</button>)}</nav>
-      <div className="profile"><a className="avatar" href="/mypage" aria-label="마이페이지" onClick={e => { e.preventDefault(); window.history.pushState({}, '', '/mypage'); setMessage('마이페이지는 준비 중입니다. 과제 작성을 계속할 수 있어요.') }}><Icon name="users" /></a><div><strong>한국 폴리텍</strong><span>강병준 교수님</span></div></div>
+      <div className="profile"><a className="avatar" href="/mypage" aria-label="마이페이지" onClick={e => { e.preventDefault(); window.history.pushState({}, '', '/mypage'); setMessage('마이페이지는 준비 중입니다. 과제 작성을 계속할 수 있어요.') }}><Icon name="user" /></a><div><strong>한국 폴리텍</strong><span>강병준 교수님</span></div></div>
     </aside>
     <main id="main" className="main">
       <header className="page-header"><div className="title-row"><button className="mobile-menu icon-button" aria-label="수업 메뉴 열기" aria-expanded={sidebarOpen} onClick={() => { setSidebarOpen(true); setSidebarCollapsed(false) }}><Icon name="menu" /></button><h1 ref={pageTitle} tabIndex={-1}>프로젝트 과제 생성</h1><span className="draft-badge">{created ? '생성 완료' : '작성 중'}</span></div><p>과제를 설계하고, 학생의 수행을 지원할 AI 운영 방식을 정하세요.</p></header>
