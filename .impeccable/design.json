@@ -1,0 +1,241 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-09-25T11:35:35.426746+00:00",
+  "title": "Design System: TRACE",
+  "extensions": {
+    "colorMeta": {
+      "primary": {
+        "role": "primary",
+        "displayName": "Primary"
+      },
+      "primary-hover": {
+        "role": "primary",
+        "displayName": "Primary Hover"
+      },
+      "mint": {
+        "role": "primary",
+        "displayName": "Mint"
+      },
+      "mint-soft": {
+        "role": "primary",
+        "displayName": "Mint Soft"
+      },
+      "rose": {
+        "role": "secondary",
+        "displayName": "Rose"
+      },
+      "yellow": {
+        "role": "secondary",
+        "displayName": "Yellow"
+      },
+      "lavender": {
+        "role": "secondary",
+        "displayName": "Lavender"
+      },
+      "chart-charcoal": {
+        "role": "secondary",
+        "displayName": "Chart Charcoal"
+      },
+      "background": {
+        "role": "neutral",
+        "displayName": "Background"
+      },
+      "surface": {
+        "role": "neutral",
+        "displayName": "Surface"
+      },
+      "foreground": {
+        "role": "neutral",
+        "displayName": "Foreground"
+      },
+      "supporting-text": {
+        "role": "neutral",
+        "displayName": "Supporting Text"
+      },
+      "sidebar-foreground": {
+        "role": "neutral",
+        "displayName": "Sidebar Foreground"
+      },
+      "border": {
+        "role": "neutral",
+        "displayName": "Border"
+      },
+      "field-border": {
+        "role": "neutral",
+        "displayName": "Field Border"
+      },
+      "panel-border": {
+        "role": "neutral",
+        "displayName": "Panel Border"
+      }
+    },
+    "typographyMeta": {
+      "headline": {
+        "displayName": "Headline",
+        "purpose": "Page title"
+      },
+      "title": {
+        "displayName": "Title",
+        "purpose": "Section titles"
+      },
+      "body": {
+        "displayName": "Body",
+        "purpose": "Form fields"
+      },
+      "label": {
+        "displayName": "Label",
+        "purpose": "Field labels"
+      },
+      "supporting": {
+        "displayName": "Supporting",
+        "purpose": "Supporting annotations"
+      },
+      "metric": {
+        "displayName": "Metric",
+        "purpose": "Evaluation percentage"
+      }
+    },
+    "shadows": [
+      {
+        "name": "toast",
+        "value": "0 8px 25px #0002",
+        "purpose": "Transient notification"
+      },
+      {
+        "name": "dialog",
+        "value": "0 20px 80px #0002",
+        "purpose": "Modal overlay"
+      }
+    ],
+    "motion": [
+      {
+        "name": "control",
+        "value": ".16s",
+        "purpose": "Input border/background and action background changes"
+      },
+      {
+        "name": "mode-reveal",
+        "value": ".18s ease-out",
+        "purpose": "Mode content opacity .65 to 1, translateY 3px to 0"
+      },
+      {
+        "name": "drawer",
+        "value": ".2s",
+        "purpose": "Sidebar translation"
+      },
+      {
+        "name": "reduced-motion",
+        "value": "none",
+        "purpose": "Disable animation and transition; scroll-behavior auto"
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "wide-min",
+        "value": "1600px"
+      },
+      {
+        "name": "compact-max",
+        "value": "1250px"
+      },
+      {
+        "name": "drawer-max",
+        "value": "1050px"
+      },
+      {
+        "name": "stack-max",
+        "value": "760px"
+      },
+      {
+        "name": "narrow-max",
+        "value": "450px"
+      }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Primary button extracted from the implemented TRACE surface.",
+      "html": "<button class=\"ds-button-primary\">임시 저장</button>",
+      "css": ".ds-button-primary { font-family:\"Apple SD Gothic Neo\",\"Noto Sans KR\",\"Malgun Gothic\",sans-serif; display:inline-flex;align-items:center;justify-content:center;gap:9px;padding:12px 20px;min-height:46px;border:1px solid transparent;border-radius:11px;font-size:13px;font-weight:600;background:var(--primary,#2b6f60);color:white;cursor:pointer;transition:background .16s; } .ds-button-primary:hover {background:#235d50;} .ds-button-primary:focus-visible { outline:3px solid var(--primary,#2b6f60); outline-offset:3px; }.ds-button-primary:disabled {opacity:.48;cursor:not-allowed;} @media(prefers-reduced-motion:reduce) {.ds-button-primary {transition:none;}}"
+    },
+    {
+      "name": "Secondary button",
+      "kind": "button",
+      "refersTo": "button-secondary",
+      "description": "Secondary button extracted from the implemented TRACE surface.",
+      "html": "<button class=\"ds-button-secondary\">임시 저장</button>",
+      "css": ".ds-button-secondary { font-family:\"Apple SD Gothic Neo\",\"Noto Sans KR\",\"Malgun Gothic\",sans-serif; display:inline-flex;align-items:center;justify-content:center;gap:9px;padding:12px 20px;min-height:46px;border:1px solid #dce2d8;border-radius:11px;font-size:13px;font-weight:600;background:white;color:#525d50;cursor:pointer;transition:background .16s; } .ds-button-secondary:hover {background:#e7ece4;} .ds-button-secondary:focus-visible { outline:3px solid var(--primary,#2b6f60); outline-offset:3px; }.ds-button-secondary:disabled {opacity:.48;cursor:not-allowed;} @media(prefers-reduced-motion:reduce) {.ds-button-secondary {transition:none;}}"
+    },
+    {
+      "name": "Text field",
+      "kind": "input",
+      "refersTo": "field",
+      "description": "Text field extracted from the implemented TRACE surface.",
+      "html": "<input class=\"ds-field\" aria-label=\"과제명\" placeholder=\"과제명을 입력하세요\" />",
+      "css": ".ds-field {font-family:\"Apple SD Gothic Neo\",\"Noto Sans KR\",\"Malgun Gothic\",sans-serif; width:100%;min-height:44px;border:1px solid #e1e5df;border-radius:10px;background:white;color:#3b423c;font-size:13px;padding:11px 13px;line-height:1.45;transition:border-color .16s,background .16s;} .ds-field::placeholder {color:#667065;} .ds-field:hover {border-color:#a8beb2;} .ds-field:focus {border-color:var(--mint,#54b3a6);} .ds-field:focus-visible { outline:3px solid var(--primary,#2b6f60); outline-offset:3px; }@media(prefers-reduced-motion:reduce){.ds-field{transition:none;}}"
+    },
+    {
+      "name": "Panel",
+      "kind": "card",
+      "refersTo": "panel",
+      "description": "Panel extracted from the implemented TRACE surface.",
+      "html": "<section class=\"ds-panel\"><h2>기본 정보</h2></section>",
+      "css": ".ds-panel {font-family:\"Apple SD Gothic Neo\",\"Noto Sans KR\",\"Malgun Gothic\",sans-serif; border:1px solid #e7e9e5;border-radius:24px;padding:26px;background:white;color:var(--foreground,#3b3d3b);} .ds-panel h2 {font-size:18px;font-weight:700;letter-spacing:-.025em;margin:0;}"
+    },
+    {
+      "name": "Active navigation",
+      "kind": "nav",
+      "refersTo": "navigation-active",
+      "description": "Active navigation extracted from the implemented TRACE surface.",
+      "html": "<nav class=\"ds-nav\"><button aria-current=\"page\">프로젝트 과제 생성</button></nav>",
+      "css": ".ds-nav {font-family:\"Apple SD Gothic Neo\",\"Noto Sans KR\",\"Malgun Gothic\",sans-serif; background:var(--sidebar,#2b6f60);padding:12px;} .ds-nav button {font:inherit;font-size:15px;min-height:58px;width:100%;padding:9px 13px;border:0;border-radius:16px;background:#3b3d3b;color:white;text-align:left;cursor:pointer;} .ds-nav button:focus-visible {outline:3px solid #cfefea;outline-offset:3px;}"
+    },
+    {
+      "name": "Editable goal chip",
+      "kind": "chip",
+      "refersTo": "goal-chip",
+      "description": "Editable goal chip extracted from the implemented TRACE surface.",
+      "html": "<div class=\"ds-chip\"><button>네트워크 장애 원인 분석</button></div>",
+      "css": ".ds-chip {font-family:\"Apple SD Gothic Neo\",\"Noto Sans KR\",\"Malgun Gothic\",sans-serif; display:inline-flex;background:var(--mint-soft,#cfefea);border-radius:10px;color:var(--primary,#2b6f60);max-width:100%;} .ds-chip button {font:inherit;background:none;border:0;padding:9px 12px;text-align:left;font-size:12px;line-height:1.5;color:inherit;cursor:pointer;} .ds-chip button:focus-visible { outline:3px solid var(--primary,#2b6f60); outline-offset:3px; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "Reference-led TRACE workspace",
+    "overview": "TRACE carries the supplied dashboard and sidebar references into a Korean teaching workspace: a deep green navigation rail, warm gray page, white rounded panels, and mint selected states. The system favors clear labels and compact operational controls over decorative imagery.\n\nThis document records the implemented reusable visual vocabulary in src/index.css and src/app.css. The specific two-step assignment composition remains in docs/surface-brief.md; it is not a required composition for every future screen.",
+    "keyCharacteristics": [
+      "Deep green navigation with a charcoal active item.",
+      "Warm gray canvas, white panels, and restrained mint selection.",
+      "Compact Korean labels and visible keyboard focus."
+    ],
+    "rules": [
+      {
+        "name": "The Selection Rule",
+        "body": "Use deep green for primary actions and mint for selected or completed supporting controls. Keep the active navigation item charcoal.",
+        "section": "colors"
+      },
+      {
+        "name": "The Reading Order Rule",
+        "body": "Keep actions after the form in document flow; the final footer override is relative, not sticky.",
+        "section": "layout"
+      },
+      {
+        "name": "The Overlay Depth Rule",
+        "body": "Keep ordinary panels flat; reserve shadows for dialogs and transient notifications.",
+        "section": "elevation"
+      }
+    ],
+    "dos": [
+      "Do preserve the supplied reference palette and rounded panel language.",
+      "Do keep keyboard focus visible and honor reduced-motion preferences.",
+      "Do retain text labels alongside evaluation colors."
+    ],
+    "donts": [
+      "Don't invent a new palette or component family beyond the supplied references.",
+      "Don't promote the current two-step form composition into a requirement for unrelated screens.",
+      "Don't reuse the superseded low-contrast supporting text values."
+    ]
+  }
+}
