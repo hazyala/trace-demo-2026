@@ -1,0 +1,18 @@
+import { useState } from 'react'
+import type { Assignment } from './assignment'
+const questions: Record<string, { student: string; question: string; next: string }> = {
+  '도움을 요청할 때': { student: '무엇부터 확인해야 할지 모르겠어요.', question: '현재 확인한 사실과 아직 추측인 내용을 나눠볼까요? 직접 확인할 수 있는 항목 하나를 골라보세요.', next: '알고 있는 사실 정리 → 첫 확인 항목 선택' },
+  '진행이 막힐 때': { student: '설정을 바꿨는데 여전히 연결이 안 돼요.', question: '설정을 바꾸기 전과 후에 무엇이 같고 무엇이 달라졌나요? 그 차이로 제외할 수 있는 원인부터 찾아보세요.', next: '관찰 비교 → 원인 가설 수정' },
+  '검증이 필요할 때': { student: 'ping이 성공했으니 문제가 해결된 것 같아요.', question: '한 번의 성공으로 모든 단말의 연결을 설명할 수 있을까요? 복구가 됐다는 판단을 확인할 검증 조건 두 가지를 정해보세요.', next: '판단 근거 설명 → 검증 조건 설계' },
+  '설명과 수행 결과가 다를 때': { student: '라우팅은 정상이라고 생각했는데 다른 대역으로는 연결이 안 돼요.', question: '예상한 결과와 실제 결과가 달라지는 지점은 어디인가요? 설명에 사용한 가정 하나를 골라 다시 확인해보세요.', next: '불일치 발견 → 가정 재검토' },
+}
+export function ThinkingExample({ moments }: { moments: string[] }) {
+  const [selected, setSelected] = useState('검증이 필요할 때')
+  const active = moments.includes(selected) ? selected : moments[0]
+  const example = questions[active]
+  if (!example) return null
+  return <div className="thinking-example"><div className="example-heading"><strong>사고를 이어가는 질문</strong><span>대화 예시</span></div><div className="example-tabs">{moments.map(moment => <button type="button" key={moment} aria-pressed={active === moment} className={active === moment ? 'selected' : ''} onClick={() => setSelected(moment)}>{moment}</button>)}</div><p className="student-message"><b>학생</b>{example.student}</p><div className="coach-message"><b>TRACE 학습 지원</b><p>{example.question}</p><span>{example.next}</span></div></div>
+}
+export function StudentPreview({ assignment: a }: { assignment: Assignment }) {
+  return <div className="student-preview"><div className="preview-notice"><strong>학생 화면 미리보기</strong><span>입력한 과제 내용이 학생에게 이렇게 보입니다.</span></div><article className="panel student-assignment"><div className="student-course">2학년 네트워크 실습 <span>팀 프로젝트</span></div><h2>{a.title}</h2><div className="assignment-meta"><span>{a.start.replaceAll('-','.')} — {a.end.replaceAll('-','.')}</span><span>난이도 {a.difficulty}</span><span>강병준 교수님</span></div><p className="assignment-description">{a.description}</p><section><h3>이번 과제의 목표</h3><div className="preview-goals">{a.goals.map((g,i) => <span key={i}>{g}</span>)}</div></section><section><h3>수행 체크리스트</h3><ul className="student-checklist">{a.requirements.map((r,i) => <li key={i}><span className="empty-check" />{r}</li>)}</ul></section><section><h3>제출할 산출물</h3><div className="student-outputs">{a.outputs.map((o,i) => <div key={i}><span className="output-format">{o.format}</span><div><strong>{o.name}</strong>{o.template ? <a href={o.template.data} download={o.template.name}>양식 다운로드 · {o.template.name}</a> : <small>자유 양식</small>}</div><span className={o.required === '필수' ? 'required-badge' : 'optional-badge'}>{o.required}</span></div>)}</div></section><section><h3>평가 기준</h3><div className="student-criteria">{a.criteria.map((c,i) => <div key={i}><i className={`color-dot color-${i%5}`} /><span>{c.name}</span><strong>{c.weight}%</strong></div>)}</div></section></article><section className="panel student-support"><h2>학습 지원</h2><p className="section-note">답을 확인하는 데서 끝내지 않고, 이유를 설명하고 직접 검증해 보세요.</p><div className="preview-goals">{a.guidance[a.mode].map(g => <span key={g}>{g}</span>)}</div>{a.mode === '교수자 직접' ? <div className="manual-preview"><span>{a.timing} · 교수자 안내</span><h3>{a.situation}</h3><p>{a.manualGuidance}</p></div> : <ThinkingExample moments={['진행이 막힐 때', '검증이 필요할 때', '설명과 수행 결과가 다를 때']} />}<p className="micro-note">{a.mode === '교수자 승인형' ? '교수자가 승인한 상황과 가이던스가 제공됩니다.' : a.mode === 'AI 자동' ? '수행 상태에 따라 학습 지원이 제공됩니다.' : '교수자가 정한 시점에 안내가 제공됩니다.'} 대화는 시연용 예시입니다.</p></section></div>
+}

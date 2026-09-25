@@ -1,0 +1,7 @@
+import { useState } from 'react'
+export function OptionEditor({ label, options, selected, onToggle, onAdd, onRemove }: { label: string; options: string[]; selected: string[]; onToggle: (s: string) => void; onAdd: (s: string) => void; onRemove: (s: string) => void }) {
+  const [value, setValue] = useState('')
+  const duplicate = options.includes(value.trim())
+  function add() { if (!value.trim() || duplicate) return; onAdd(value.trim()); setValue('') }
+  return <div className="option-editor"><div className="editable-options">{options.map(option => <div className={`editable-option ${selected.includes(option) ? 'selected' : ''}`} key={option}><button type="button" aria-pressed={selected.includes(option)} onClick={() => onToggle(option)}>{selected.includes(option) && <span className="option-check" aria-hidden="true" />}{option}</button><button type="button" className="option-remove" aria-label={`${label} ${option} 삭제`} onClick={() => onRemove(option)}><span aria-hidden="true" /></button></div>)}</div><div className="option-add"><input aria-label={`새 ${label}`} placeholder={`${label} 직접 추가`} value={value} onChange={e => setValue(e.target.value)} onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); add() } }} /><button type="button" className="text-button" disabled={!value.trim() || duplicate} onClick={add}>{label} 추가</button></div>{duplicate && <p className="micro-note">이미 있는 옵션입니다.</p>}</div>
+}

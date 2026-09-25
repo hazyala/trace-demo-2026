@@ -2,9 +2,10 @@ export type Mode = '교수자 직접' | 'AI 자동' | '교수자 승인형'
 export type Assignment = {
   title: string; description: string; start: string; end: string; difficulty: string;
   goals: string[]; requirements: string[];
-  outputs: { name: string; format: string; required: string }[];
+  outputs: { name: string; format: string; required: string; template?: { name: string; data: string } }[];
   criteria: { name: string; weight: number }[];
   mode: Mode; situation: string; timing: string; manualGuidance: string;
+  situationOptions: string[]; guidanceOptions: string[];
   intervention: string; situations: string[]; guidance: Record<Mode, string[]>;
 }
 export const modes: Mode[] = ['교수자 직접', 'AI 자동', '교수자 승인형']
@@ -15,6 +16,7 @@ export const courseCriteria = [
   { name: '검증', weight: 20 }, { name: '산출물', weight: 20 }, { name: '협업', weight: 10 },
 ]
 export const initialAssignment: Assignment = {
+  situationOptions, guidanceOptions,
   title: '교내 네트워크 장애 진단 및 복구',
   description: '실습실 네트워크에 발생한 연결 장애의 원인을 팀별로 진단하고 복구하세요. 진단 근거와 해결 과정을 기록하고, 복구 후 연결 상태를 검증합니다.',
   start: '2026-10-05', end: '2026-10-16', difficulty: '중',
@@ -56,6 +58,10 @@ export function readDraft(): Assignment {
     if (!Array.isArray(a.outputs) || !a.outputs.every((x: Assignment['outputs'][number]) => x && typeof x.name === 'string' && typeof x.format === 'string' && typeof x.required === 'string')) return structuredClone(initialAssignment)
     if (!Array.isArray(a.criteria) || !a.criteria.every((x: Assignment['criteria'][number]) => x && typeof x.name === 'string' && typeof x.weight === 'number')) return structuredClone(initialAssignment)
     if (!a.guidance || !modes.every(m => Array.isArray(a.guidance[m]) && a.guidance[m].every((x: unknown) => typeof x === 'string'))) return structuredClone(initialAssignment)
+    for (const key of ['situationOptions', 'guidanceOptions'] as const) {
+      if (!Array.isArray(a[key]) || !a[key].every((x: unknown) => typeof x === 'string')) a[key] = [...initialAssignment[key]]
+    }
+    a.outputs = a.outputs.map((out: Assignment['outputs'][number]) => ({ ...out, template: out.template && typeof out.template.name === 'string' && typeof out.template.data === 'string' && out.template.data.startsWith('data:') ? out.template : undefined }))
     return a
   } catch { return structuredClone(initialAssignment) }
 }

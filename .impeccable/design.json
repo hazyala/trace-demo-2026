@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-09-25T11:35:35.426746+00:00",
+  "generatedAt": "2026-09-25T12:01:55.443827+00:00",
   "title": "Design System: TRACE",
   "extensions": {
     "colorMeta": {
@@ -67,6 +67,18 @@
       "panel-border": {
         "role": "neutral",
         "displayName": "Panel Border"
+      },
+      "rose-soft": {
+        "role": "secondary",
+        "displayName": "Rose Soft"
+      },
+      "yellow-soft": {
+        "role": "secondary",
+        "displayName": "Yellow Soft"
+      },
+      "lavender-soft": {
+        "role": "secondary",
+        "displayName": "Lavender Soft"
       }
     },
     "typographyMeta": {
@@ -200,11 +212,18 @@
       "description": "Editable goal chip extracted from the implemented TRACE surface.",
       "html": "<div class=\"ds-chip\"><button>네트워크 장애 원인 분석</button></div>",
       "css": ".ds-chip {font-family:\"Apple SD Gothic Neo\",\"Noto Sans KR\",\"Malgun Gothic\",sans-serif; display:inline-flex;background:var(--mint-soft,#cfefea);border-radius:10px;color:var(--primary,#2b6f60);max-width:100%;} .ds-chip button {font:inherit;background:none;border:0;padding:9px 12px;text-align:left;font-size:12px;line-height:1.5;color:inherit;cursor:pointer;} .ds-chip button:focus-visible { outline:3px solid var(--primary,#2b6f60); outline-offset:3px; }"
+    },
+    {
+      "name": "Numbered section box",
+      "kind": "custom",
+      "description": "Soft categorical section marker; mint, rose, yellow, lavender, then mint. Separate from circular workflow steps.",
+      "html": "<span class=\"ds-section-number\">02</span>",
+      "css": ".ds-section-number {display:grid;place-items:center;width:38px;height:38px;border-radius:12px;font-family:\"Apple SD Gothic Neo\",\"Noto Sans KR\",\"Malgun Gothic\",sans-serif;font-size:12px;font-weight:600;font-variant-numeric:tabular-nums;color:#3b423c;background:#f0dddd;} @media(max-width:760px){.ds-section-number{width:34px;height:34px;}}"
     }
   ],
   "narrative": {
     "northStar": "Reference-led TRACE workspace",
-    "overview": "TRACE carries the supplied dashboard and sidebar references into a Korean teaching workspace: a deep green navigation rail, warm gray page, white rounded panels, and mint selected states. The system favors clear labels and compact operational controls over decorative imagery.\n\nThis document records the implemented reusable visual vocabulary in src/index.css and src/app.css. The specific two-step assignment composition remains in docs/surface-brief.md; it is not a required composition for every future screen.",
+    "overview": "TRACE carries the supplied dashboard and sidebar references into a Korean teaching workspace: a deep green navigation rail, warm gray page, white rounded panels, and mint selected states. The system favors clear labels and compact operational controls over decorative imagery.\n\nThis document records the implemented reusable visual vocabulary in src/index.css and src/app.css. The specific three-step assignment composition remains in docs/surface-brief.md; it is not a required composition for every future screen.",
     "keyCharacteristics": [
       "Deep green navigation with a charcoal active item.",
       "Warm gray canvas, white panels, and restrained mint selection.",
@@ -234,7 +253,7 @@
     ],
     "donts": [
       "Don't invent a new palette or component family beyond the supplied references.",
-      "Don't promote the current two-step form composition into a requirement for unrelated screens.",
+      "Don't promote the current three-step form composition into a requirement for unrelated screens.",
       "Don't reuse the superseded low-contrast supporting text values."
     ]
   }

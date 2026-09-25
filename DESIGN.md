@@ -6,6 +6,9 @@ colors:
   primary-hover: "#235d50"
   mint: "#54b3a6"
   mint-soft: "#cfefea"
+  rose-soft: "#f0dddd"
+  yellow-soft: "#f8edcc"
+  lavender-soft: "#e4e1f6"
   rose: "#d9807a"
   yellow: "#d4b763"
   lavender: "#837abd"
@@ -100,7 +103,7 @@ components:
 
 TRACE carries the supplied dashboard and sidebar references into a Korean teaching workspace: a deep green navigation rail, warm gray page, white rounded panels, and mint selected states. The system favors clear labels and compact operational controls over decorative imagery.
 
-This document records the implemented reusable visual vocabulary in src/index.css and src/app.css. The specific two-step assignment composition remains in docs/surface-brief.md; it is not a required composition for every future screen.
+This document records the implemented reusable visual vocabulary in src/index.css and src/app.css. The specific three-step assignment composition remains in docs/surface-brief.md; it is not a required composition for every future screen.
 
 **Key Characteristics:**
 - Deep green navigation with a charcoal active item.
@@ -113,7 +116,7 @@ This document records the implemented reusable visual vocabulary in src/index.cs
 Deep green is the main action and sidebar color. Mint marks selection, completion, and supporting accents; soft mint supplies chip backgrounds.
 
 ### Secondary
-Rose, yellow, lavender, mint, and chart charcoal distinguish evaluation segments and their text-labeled legends. These are categorical colors, not additional action hierarchies.
+Rose, yellow, lavender, mint, and chart charcoal distinguish evaluation segments and their text-labeled legends. These are categorical colors, not additional action hierarchies. Soft mint, rose, yellow, and lavender also supply numbered section boxes and student-preview badges; use the soft frontmatter tokens for these surfaces rather than the stronger evaluation-chart colors.
 
 ### Neutral
 The warm gray canvas supports white panels and charcoal content. Supporting text uses the corrected supporting-text token; the stylesheet also contains contextual muted colors. Thin panel and field borders provide separation. The frontmatter records the durable reused palette, not every contextual tint.
@@ -128,7 +131,7 @@ Page headlines reduce to 23px at 760px. Section titles reduce to 17px at 450px. 
 
 ## Layout
 
-The fixed sidebar is 272px wide by default, 290px from 1600px, and 240px through 1250px. At 1050px and below it becomes a 272px off-canvas drawer with a dimmed backdrop; the main content loses its left offset. The main region has a 1740px maximum width and default padding of 42px 44px 0; wide layouts use 52px 64px 0, compact desktop 34px 27px 0, tablet 30px 30px 0, and widths through 760px use 21px 18px 0.
+The fixed sidebar is 272px wide by default, 290px from 1600px, and 240px through 1250px. At 1050px and below it becomes a 272px off-canvas drawer with a dimmed backdrop; the main content loses its left offset. The desktop sidebar can also collapse completely, removing the main content offset and exposing its reopen control. The main region has a 1740px maximum width and default padding of 42px 44px 0; wide layouts use 52px 64px 0, compact desktop 34px 27px 0, tablet 30px 30px 0, and widths through 760px use 21px 18px 0.
 
 The current assignment grid uses 1.15fr/1fr columns with a 22px gap (17px through 1250px), then one column through 760px. Evaluation content similarly stacks at 760px. AI content is capped at 1100px. At 450px, date/difficulty groups stack and compact table tracks shrink. The body minimum width is 360px. These are observed responsive thresholds, not device assumptions.
 
@@ -144,7 +147,7 @@ The toast shadow is `0 8px 25px #0002`; the dialog shadow is `0 20px 80px #0002`
 
 ## Shapes
 
-Controls and chips have softly rounded control corners; primary/secondary actions use the button radius, and navigation uses the larger navigation radius. Panels and dialogs share the panel radius; panels reduce to the compact radius at 760px. The sidebar has a 30px lower-right corner on desktop and 22px right corners in drawer mode. Circular step markers, avatars, and evaluation dots remain purposeful indicators.
+Controls and chips have softly rounded control corners; primary/secondary actions use the button radius, and navigation uses the larger navigation radius. Panels and dialogs share the panel radius; panels reduce to the compact radius at 760px. The sidebar has a 30px lower-right corner on desktop and 22px right corners in drawer mode. Numbered section boxes are 38px squares with 12px corners (34px squares through 760px), using soft mint, rose, yellow, lavender, then mint. Circular workflow step markers, avatars, and evaluation dots remain purposeful indicators.
 
 ## Components
 
@@ -153,6 +156,10 @@ Controls and chips have softly rounded control corners; primary/secondary action
 - **Panels:** white, thin bordered containers. Section headings pair a title with contextual actions or counts. Do not add ambient card shadows.
 - **Navigation:** 58px minimum rows with charcoal icon tiles; the active row becomes charcoal with a mint icon tile. Labels remain visible in the drawer. The profile anchors the sidebar bottom.
 - **Goal chips:** soft mint, green editable labels, and an adjacent remove action. Labels wrap. Guidance chips use the same selected color relationship, with a 9px radius.
+- **Editable option chips:** situation and guidance options wrap with a 9px gap, 10px corners, and 44px minimum-height toggle buttons. Selected chips use soft mint with a check; a separate remove button has a soft rose hover state. An adjacent text field adds custom options and identifies duplicates.
+- **Output templates:** each output owns its upload/replace control, downloadable filename, and remove action. The filename truncates in the editor and wraps in the student preview; upload controls grow from 36px to 44px at the drawer breakpoint.
+- **Assignment workflow:** three steps—과제 설계, AI 운영 방식, 학생 미리보기—use numbered current states and checked completed states. The preview reuses the white panels, soft chips, labeled evaluation colors, and output template downloads. It is capped at 1100px and distinguishes illustrative learning-support dialogue from assignment content.
+- **Intervention levels:** 최소, 보통, 적극 each pair a label with a full description of support behavior; the cards stack through 760px. These levels describe question-led support, with no intervention-timing options or external-AI-detection claims.
 - **Mode selection:** three equal tabs sit in a warm gray track; selected mode uses deep green and white. Content reveals over .18s ease-out from .65 opacity and a 3px downward offset. This transition signals the changed form contents.
 - **Tablet targets:** at 1050px and below, remove controls, segmented controls, and guidance actions reach 44px; retain the final stylesheet overrides when extending them.
 
@@ -167,5 +174,5 @@ The drawer translates over .2s. Under `prefers-reduced-motion: reduce`, all anim
 
 ### Don't:
 - Don't invent a new palette or component family beyond the supplied references.
-- Don't promote the current two-step form composition into a requirement for unrelated screens.
+- Don't promote the current three-step form composition into a requirement for unrelated screens.
 - Don't reuse the superseded low-contrast supporting text values.
