@@ -95,7 +95,7 @@ test('교수자 지정과 자동 추천 팀 구성', async ({ page }) => {
   await page.getByRole('button', { name: 'AI 운영 방식 설정' }).click()
   await page.getByRole('button', { name: '학생 화면 미리보기', exact: true }).click()
   await expect(page.getByText('나의 팀', { exact: true })).toBeVisible()
-  await expect(page.getByText('김민준 · 윤서준 · 장시우 · 전민재', { exact: true })).toBeVisible()
+  await expect(page.getByText('김민준 · 윤서준 · 장시우 · 유송민', { exact: true })).toBeVisible()
 })
 
 test('화면 크기별 레이아웃과 데모 캡처', async ({ page }) => {

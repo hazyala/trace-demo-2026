@@ -1,0 +1,3 @@
+import { LayoutDashboard,FilePenLine,ListChecks,UsersRound,Settings,Network,Files,MessagesSquare,MessageCircle,ChartNoAxesCombined } from 'lucide-react'
+export const teacherNavigation=[['dashboard','수업 대시보드',LayoutDashboard],['assignment','프로젝트 · 과제 생성',FilePenLine],['evaluation','학생별 평가 지원',ListChecks],['monitoring','팀별 모니터링',UsersRound],['settings','과목 설정',Settings]] as const
+export const studentNavigation=[['team','팀 대시보드',LayoutDashboard],['studio','프로젝트 작업실',Network],['documents','팀 자료',Files],['chat','팀 채팅',MessagesSquare],['ai','개인 AI 지원',MessageCircle],['learning','나의 학습 기록',ChartNoAxesCombined]] as const

@@ -1,14 +1,17 @@
+import { KnowledgeConnections } from './KnowledgeConnections'
 import { Plus, X, Check, ArrowRight, ArrowLeft, ChevronDown, UsersRound, UserRound, Settings, FilePenLine, ListChecks, LayoutDashboard, Menu, Save, Download } from 'lucide-react'
 import { Fragment, useEffect, useRef, useState, type ReactNode } from 'react'
-import { type Assignment as AssignmentType, initialAssignment, modes, readDraft, storageKey, suggestGoals, validateAssignment } from './assignment'
+import { type Assignment as AssignmentType, modes, readDraft, storageKey, suggestGoals, validateAssignment } from './assignment'
 import { StudentPreview } from './StudentPreview'
 import { OptionEditor } from './OptionEditor'
 import { TeamBuilder } from './TeamBuilder'
 import { ExecutionEnvironment } from './ExecutionEnvironment'
 import { TeachingWorkspace, type TeachingView } from './TeachingWorkspace'
-import { FusionWorkspace } from './FusionWorkspace'
+import { scenarios, readProject, workspaceKey, type WorkspaceId } from './scenarios'
+import { WorkspaceContext, WorkspaceUiContext, useWorkspaceUi, useWorkspace } from './WorkspaceContext'
+import { WorkspaceSidebar } from './WorkspaceSidebar'
 import { StudentWorkspace } from './StudentWorkspace'
-import { ProfileSwitch } from './ProfileSwitch'
+
 import { CourseDashboard } from './CourseDashboard'
 import { CourseSettings } from './CourseSettings'
 import { readCourse, type TeachingTarget } from './course'
@@ -19,20 +22,20 @@ type IconName = 'plus' | 'close' | 'check' | 'right' | 'left' | 'down' | 'users'
 function Icon({ name }: { name: IconName }) { const icons={plus:Plus,close:X,check:Check,right:ArrowRight,left:ArrowLeft,down:ChevronDown,users:UsersRound,user:UserRound,settings:Settings,edit:FilePenLine,list:ListChecks,grid:LayoutDashboard,menu:Menu,save:Save,download:Download};const Component=icons[name];return <Component size={20} strokeWidth={1.8} className="trace-icon" aria-hidden="true"/> }
 function Remove({ label, onClick }: { label: string; onClick: () => void }) { return <button type="button" className="icon-button remove" aria-label={label} onClick={onClick}><Icon name="close" /></button> }
 function Section({ title, number, action, children, className = '' }: { title: string; number: string; action?: ReactNode; children: ReactNode; className?: string }) { return <section className={`panel ${className}`}><div className="section-heading"><h2><span className={`section-number tone-${Number(number) % 5}`}>{number}</span>{title}</h2>{action}</div>{children}</section> }
-function App() {
-  const [a, setA] = useState(readDraft)
-  const [studentRole,setStudentRole] = useState(false)
-  const [workspace,setWorkspace] = useState<'network'|'fusion'>('network')
-  const [step, setStep] = useState(1)
-  const [view, setView] = useState<'assignment' | 'dashboard' | 'settings' | TeachingView>('assignment')
-  const [course, setCourse] = useState(readCourse)
-  const [courseDraft, setCourseDraft] = useState(readCourse)
-  const [teachingAssignment, setTeachingAssignment] = useState<AssignmentType|null>(()=>{try{return JSON.parse(localStorage.getItem('trace-teaching-assignment')||'null')}catch{return null}})
+function TeacherApp({studentRole,onRole,view,setView,studentView,setStudentView}:{studentRole:boolean;onRole:()=>void;view:'assignment'|'dashboard'|'settings'|TeachingView;setView:(v:'assignment'|'dashboard'|'settings'|TeachingView)=>void;studentView:string;setStudentView:(v:string)=>void}) {
+  const {scenario}=useWorkspace()
+  const initialAssignment=scenario.assignment
+  const key=(k:string)=>workspaceKey(scenario.id,k)
+  const [a, setA] = useState(()=>readDraft(key(storageKey),initialAssignment))
+  const {step,setStep}=useWorkspaceUi()
+  const [course, setCourse] = useState(()=>readCourse(key('trace-course-v1'),scenario.course))
+  const [courseDraft, setCourseDraft] = useState(()=>readCourse(key('trace-course-v1'),scenario.course))
+  const [teachingAssignment, setTeachingAssignment] = useState<AssignmentType|null>(()=>{try{return JSON.parse(localStorage.getItem(key('trace-teaching-assignment'))||'null')}catch{return null}})
   const [teachingTarget, setTeachingTarget] = useState<TeachingTarget>({})
   const [teachingKey, setTeachingKey] = useState(0)
   const [decisions, setDecisions] = useState<Record<string,string>>({})
   function openTeaching(next:TeachingView,target:TeachingTarget) { setTeachingTarget(target);setTeachingKey(k=>k+1);setView(next);window.scrollTo(0,0) }
-  function newProject() { if(!teachingAssignment){setTeachingAssignment(structuredClone(a));try{localStorage.setItem('trace-teaching-assignment',JSON.stringify(a))}catch{/* Keep the in-session snapshot. */}} setA({...structuredClone(initialAssignment),title:'',description:'',goals:[...course.goals],criteria:structuredClone(course.criteria),mode:course.mode,intervention:course.intervention,guidance:Object.fromEntries(modes.map(m=>[m,[...course.guidance]])) as AssignmentType['guidance'],directAnswers:course.directAnswers});setView('assignment');setStep(1);setSaved(false);setCreated(false);setError('');window.scrollTo(0,0);setMessage('저장된 과목 기준으로 새 프로젝트 초안을 시작합니다.') }
+  function newProject() { if(!teachingAssignment){setTeachingAssignment(structuredClone(a));try{localStorage.setItem(key('trace-teaching-assignment'),JSON.stringify(a))}catch{/* Keep the in-session snapshot. */}} setA({...structuredClone(initialAssignment),title:'',description:'',goals:[...course.goals],criteria:structuredClone(course.criteria),mode:course.mode,intervention:course.intervention,guidance:Object.fromEntries(modes.map(m=>[m,[...course.guidance]])) as AssignmentType['guidance'],directAnswers:course.directAnswers});setView('assignment');setStep(1);setSaved(false);setCreated(false);setError('');window.scrollTo(0,0);setMessage('저장된 과목 기준으로 새 프로젝트 초안을 시작합니다.') }
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
   const [message, setMessage] = useState('')
@@ -57,7 +60,7 @@ function App() {
   }
   function save(create = false) {
     if (create) { const issue = validateAssignment(a, true); if (issue) { setError(issue); return } }
-    try { localStorage.setItem(storageKey, JSON.stringify(a)); setSaved(true); setCreated(create); setError(''); setMessage(create ? '과제가 생성되었습니다. 이 브라우저에 데모로 저장했어요.' : '임시 저장했습니다. 다음 접속에서도 이어서 작성할 수 있어요.') }
+    try { localStorage.setItem(key(storageKey), JSON.stringify(a)); setSaved(true); setCreated(create); setError(''); setMessage(create ? '과제가 생성되었습니다. 이 브라우저에 데모로 저장했어요.' : '임시 저장했습니다. 다음 접속에서도 이어서 작성할 수 있어요.') }
     catch { setError('저장 공간을 사용할 수 없습니다. 브라우저 설정을 확인해 주세요.') }
   }
   function addGoal() { if (!newGoal.trim()) return; update('goals', [...a.goals, newGoal.trim()]); setNewGoal('') }
@@ -81,7 +84,7 @@ function App() {
   function openSuggestions() {
     if (!a.title.trim()) { setError('목표를 불러오기 전에 과제명을 입력해 주세요.'); return }
     setSelectedGoals([]); setLoading(true); setSuggestions([]); dialog.current?.showModal()
-    timeout.current = setTimeout(() => { setSuggestions([...new Set([...course.goals,...suggestGoals(a.title)])]); setLoading(false) }, 600)
+    timeout.current = setTimeout(() => { setSuggestions([...new Set([...course.goals,...(scenario.id==='network'?suggestGoals(a.title):scenario.assignment.goals)])]); setLoading(false) }, 600)
   }
   function toggleGuidance(value: string) { const current = a.guidance[a.mode]; update('guidance', { ...a.guidance, [a.mode]: current.includes(value) ? current.filter(x => x !== value) : [...current, value] }) }
   async function uploadTemplate(file: File | undefined, index: number) {
@@ -95,20 +98,11 @@ function App() {
   }
   const total = a.criteria.reduce((s, c) => s + c.weight, 0)
   const expectedTeams = Math.ceil(24 / Math.max(2, a.teamSize))
-  const nav: { label: string; icon: IconName }[] = [{ label: '수업 대시보드', icon: 'grid' }, { label: '프로젝트 · 과제 생성', icon: 'edit' }, { label: '학생별 평가 지원', icon: 'list' }, { label: '팀별 모니터링', icon: 'users' }, { label: '과목 설정', icon: 'settings' }]
-  if(workspace==='fusion')return <FusionWorkspace student={studentRole} onRoleChange={()=>setStudentRole(!studentRole)} onWorkspace={setWorkspace}/>
-  if(studentRole)return <StudentWorkspace onInstructor={()=>setStudentRole(false)} onWorkspace={setWorkspace}/>
-  return <div className={`app-shell ${sidebarCollapsed ? 'sidebar-collapsed' : ''}`}>
+  if(studentRole)return <StudentWorkspace onInstructor={onRole} view={studentView} onView={setStudentView}/>
+  return <div className={`app-shell student-shell unified-shell ${sidebarCollapsed ? 'sidebar-collapsed' : ''}`}>
     <a className="skip-link" href="#main">본문으로 이동</a>
     {sidebarOpen && <button className="sidebar-backdrop" aria-label="메뉴 닫기" onClick={() => setSidebarOpen(false)} />}
-    <aside className={`sidebar ${sidebarOpen ? 'open' : ''}`} aria-label="수업 메뉴">
-      <div className="brand"><span />TRACE</div>
-      <button className="mobile-close icon-button" aria-label="사이드바 닫기" onClick={() => { setSidebarOpen(false); setSidebarCollapsed(true) }}><span className="sidebar-collapse-icon"><Icon name="left" /></span></button>
-      <label className="course-label" htmlFor="course">현재 수업</label>
-      <div className="course-select"><select id="course" value={workspace} onChange={e=>setWorkspace(e.target.value as 'network'|'fusion')}><option value="network">{course.name}</option><option value="fusion">융합 팀 프로젝트</option></select><Icon name="down" /></div>
-      <nav>{nav.map((item,i) => { const next = (['dashboard','assignment','evaluation','monitoring','settings'] as const)[i];const active=view===next;return <button key={item.label} className={`nav-item ${active?'active':''}`} aria-current={active?'page':undefined} onClick={()=>{setSidebarOpen(false);setView(next);window.scrollTo(0,0);if(next==='assignment')changeStep(1)}}><span className="nav-icon"><Icon name={item.icon}/></span>{item.label}</button> })}</nav>
-      <ProfileSwitch student={false} onSwitch={()=>setStudentRole(true)}/>
-    </aside>
+    <WorkspaceSidebar student={false} view={view} courseName={course.name} open={sidebarOpen} onClose={()=>{setSidebarOpen(false);setSidebarCollapsed(true)}} onRole={onRole} onNavigate={id=>{setSidebarOpen(false);setView(id as typeof view);window.scrollTo(0,0);if(id==='assignment')changeStep(1)}}/>
     <main id="main" className="main">
       {view !== 'assignment' ? <><header className="page-header"><div className="title-row"><button className="mobile-menu icon-button" aria-label="수업 메뉴 열기" onClick={()=>{setSidebarOpen(true);setSidebarCollapsed(false)}}><Icon name="menu"/></button><h1>{view==='dashboard'?'수업 대시보드':view==='settings'?'과목 설정':view==='monitoring'?'팀별 모니터링':'학생별 평가 지원'}</h1></div><p>{view==='dashboard'?'수업의 흐름을 보고, 필요한 지원을 연결하세요.':view==='settings'?'교육과정과 평가 기준을 확인하고 다음 과제에 재사용하세요.':view==='monitoring'?'팀의 진행 흐름을 살피고, 지금 필요한 개입을 결정하세요.':'학생의 수행과 이해를 과정증거로 확인하고 평가를 기록하세요.'}</p></header>{view==='dashboard'?<CourseDashboard course={course} assignment={teachingAssignment??a} decisions={decisions} onOpen={openTeaching}/>:view==='settings'?<CourseSettings course={course} initialDraft={courseDraft} onDraftChange={setCourseDraft} onSave={setCourse} onCreate={newProject}/>:<TeachingWorkspace key={teachingKey} initialTarget={teachingTarget} decisions={decisions} onDecisions={setDecisions} view={view} assignment={teachingAssignment??a} onNavigate={setView}/>}</> : <>
       <header className="page-header"><div className="title-row"><button className="mobile-menu icon-button" aria-label="수업 메뉴 열기" aria-expanded={sidebarOpen} onClick={() => { setSidebarOpen(true); setSidebarCollapsed(false) }}><Icon name="menu" /></button><h1 ref={pageTitle} tabIndex={-1}>프로젝트 · 과제 생성</h1><span className="draft-badge">{created ? '생성 완료' : '작성 중'}</span></div><p>과제를 설계하고, 학생의 수행을 지원할 AI 운영 방식을 정하세요.</p></header>
@@ -130,7 +124,7 @@ function App() {
           <p className="section-note">이 과제를 통해 학생이 도달할 목표</p>
           <div className="goal-chips">{a.goals.map((goal, i) => <div className="goal-chip" key={i}>{editingGoal === i ? <input aria-label={`목표 ${i + 1} 수정`} autoFocus value={editText} onChange={e => setEditText(e.target.value)} onBlur={() => { if (editText.trim()) update('goals', a.goals.map((x,j) => i === j ? editText.trim() : x)); setEditingGoal(null) }} onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); e.currentTarget.blur() } if (e.key === 'Escape') { setEditingGoal(null) } }} /> : <button type="button" className="chip-label" title="클릭해서 목표 수정" onClick={() => { setEditingGoal(i); setEditText(goal) }}>{goal}</button>}<Remove label={`목표 ${i + 1} 삭제`} onClick={() => update('goals', a.goals.filter((_,j) => i !== j))} /></div>)}</div>
           <div className="goal-add"><input aria-label="새 과제 목표" placeholder="목표를 직접 입력하세요" value={newGoal} onChange={e => setNewGoal(e.target.value)} onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); addGoal() } }} /><button type="button" className="icon-button" aria-label="목표 추가" disabled={!newGoal.trim()} onClick={addGoal}><Icon name="plus" /></button></div>
-          <p className="micro-note">목표를 누르면 수정할 수 있습니다.</p>
+          <p className="micro-note">목표를 누르면 수정할 수 있습니다.</p><div className="assignment-knowledge"><h3>연결할 지식과 교과</h3><p className="section-note">이번 과목뿐 아니라 이전 학기와 다른 교과의 개념도 연결할 수 있습니다.</p><KnowledgeConnections editable /></div>
         </Section>
         <Section number="05" title="평가 요구사항" action={<div className="section-actions"><span className="count-label">{a.requirements.length}개 항목</span><button type="button" className="text-button improve-button" onClick={recommendRequirements}><Icon name="settings" />AI로 요구사항 추천</button></div>}>
           <div className="requirements">{a.requirements.map((value, i) => <div className="requirement-row" key={i}><span className="check-marker"><Icon name="check" /></span><textarea rows={2} aria-label={`요구사항 ${i + 1}`} value={value} onChange={e => update('requirements', a.requirements.map((x,j) => j === i ? e.target.value : x))} placeholder="학생이 반드시 수행해야 할 행동이나 조건" /><Remove label={`요구사항 ${i + 1} 삭제`} onClick={() => update('requirements', a.requirements.filter((_,j) => j !== i))} /></div>)}</div><button type="button" className="add-button" onClick={() => update('requirements', [...a.requirements, ''])}><Icon name="plus" />요구사항 추가</button>
@@ -154,5 +148,15 @@ function App() {
     {message && <div className="toast" role="status"><Icon name="check" /><span>{message}</span><button className="icon-button" aria-label="알림 닫기" onClick={() => setMessage('')}><Icon name="close" /></button></div>}
     <dialog ref={dialog} className="goals-dialog"><div className="dialog-heading"><h2>과목 설정에서 목표 불러오기</h2><Remove label="목표 불러오기 닫기" onClick={() => dialog.current?.close()} /></div><p className="dialog-context">{course.name} <span>· 저장된 학습 목표와 예시 추천</span></p><div className="suggestion-summary"><strong>{a.title}</strong><p>과제명과 연관된 학습 목표를 골라보세요.</p></div>{loading ? <div className="loading-suggestions" role="status">과목 커리큘럼에서 관련 목표를 정리하고 있어요…</div> : <div className="suggestion-list">{suggestions.map(s => <label key={s}><input type="checkbox" checked={selectedGoals.includes(s)} onChange={() => setSelectedGoals(selectedGoals.includes(s) ? selectedGoals.filter(x => x !== s) : [...selectedGoals,s])} /><span>{s}</span></label>)}</div>}<p className="micro-note">데모에서는 과제명에 맞춘 예시 추천을 제공합니다.</p><div className="dialog-footer"><button className="button secondary" onClick={() => dialog.current?.close()}>취소</button><button className="button primary" disabled={!selectedGoals.length || loading} onClick={() => { update('goals',[...new Set([...a.goals,...selectedGoals])]); dialog.current?.close(); setMessage('선택한 목표를 추가했습니다.') }}>{selectedGoals.length}개 목표 가져오기</button></div></dialog>
   </div>
+}
+function WorkspaceRuntime({id,onWorkspace,studentRole,onRole,view,setView,studentView,setStudentView}:{id:WorkspaceId;onWorkspace:(id:WorkspaceId)=>void;studentRole:boolean;onRole:()=>void;view:'assignment'|'dashboard'|'settings'|TeachingView;setView:(v:'assignment'|'dashboard'|'settings'|TeachingView)=>void;studentView:string;setStudentView:(v:string)=>void}){
+ const [data,setData]=useState(()=>readProject(id)),[storageError,setStorageError]=useState('')
+ useEffect(()=>{try{localStorage.setItem(`trace-project-${id}-v2`,JSON.stringify(data));queueMicrotask(()=>setStorageError(''))}catch{queueMicrotask(()=>setStorageError('저장 공간이 부족해 변경사항이 현재 화면에만 유지됩니다. 첨부 크기를 줄여 주세요.'))}},[data,id])
+ return <WorkspaceContext.Provider value={{scenario:scenarios[id],data,setData,onWorkspace}}>{storageError&&<p role="alert" className="workspace-storage-error">{storageError}</p>}<TeacherApp studentRole={studentRole} onRole={onRole} view={view} setView={setView} studentView={studentView} setStudentView={setStudentView}/></WorkspaceContext.Provider>
+}
+function App(){
+ const [id,setId]=useState<WorkspaceId>('network'),[studentRole,setStudentRole]=useState(false),[view,setView]=useState<'assignment'|'dashboard'|'settings'|TeachingView>('assignment'),[studentView,setStudentView]=useState('team')
+ const [step,setStep]=useState(1),[category,setCategory]=useState(0),[tab,setTab]=useState('기획·기술 선택')
+ return <WorkspaceUiContext.Provider value={{step,setStep,category,setCategory,tab,setTab}}><WorkspaceRuntime key={id} id={id} onWorkspace={setId} studentRole={studentRole} onRole={()=>setStudentRole(!studentRole)} view={view} setView={setView} studentView={studentView} setStudentView={setStudentView}/></WorkspaceUiContext.Provider>
 }
 export default App

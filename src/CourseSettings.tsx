@@ -1,21 +1,26 @@
+import { useWorkspace,useWorkspaceUi } from './WorkspaceContext'
+import { workspaceKey } from './scenarios'
 import { useRef, useState } from 'react'
 import { guidanceOptions, modes } from './assignment'
-import { defaultCourse, type Course } from './course'
+import { type Course } from './course'
 type ImportRow = { key:'basic'|'goals'|'standards'|'ncs'|'criteria'|'curriculum'; label:string; value:string; original:string; selected:boolean }
 const categories=['과목 기본 정보','교육과정 · 학습 목표','평가 운영 기준','AI 운영 기본 정책','수업 일정','기준 문서 관리']
 const multiline=(s:string)=>s.split('\n').map(v=>v.trim()).filter(Boolean)
 function importRows(c:Course):ImportRow[] {
   return [
     {key:'basic',label:'과목 기본 정보',value:c.name,original:`예시 수업계획서 1쪽 · 과목명: ${c.name}`},
-    {key:'goals',label:'학습 목표',value:c.goals.join('\n'),original:'예시 2쪽 · 장애 원인을 설명하고, 진단 도구로 가설을 비교하며 수정 전후 결과를 검증한다. 팀의 역할을 수행하고 판단을 공유한다.'},
-    {key:'standards',label:'성취기준',value:c.standards.join('\n'),original:'예시 3쪽 · 주소와 경로 해석 / 설정과 결과의 비교 / 검증 조건에 따른 해결 여부 설명'},
-    {key:'ncs',label:'NCS 능력단위',value:c.ncs.join('\n'),original:'예시 3쪽 · 네트워크 구축 및 유지보수. 공식 능력단위 코드 검증은 연결 후 제공.'},
-    {key:'criteria',label:'평가 요소',value:c.criteria.map(r=>`${r.name} | ${r.weight}`).join('\n'),original:'예시 4쪽 · 문제 이해 20, 해결 과정 30, 검증 20, 산출물 20, 협업 10. 총 100%.'},
-    {key:'curriculum',label:'16주 수업 일정',value:c.curriculum.join('\n'),original:'예시 5쪽 · 기초 → 주소·서브넷 → VLAN·라우팅 → 진단·검증 → 통합 구축 → 발표·성찰'},
+    {key:'goals',label:'학습 목표',value:c.goals.join('\n'),original:'예시 원문 · '+c.goals.join(' / ')},
+    {key:'standards',label:'성취기준',value:c.standards.join('\n'),original:'예시 원문 · '+c.standards.join(' / ')},
+    {key:'ncs',label:'NCS 능력단위',value:c.ncs.join('\n'),original:'예시 원문 · '+c.ncs.join(' / ')},
+    {key:'criteria',label:'평가 요소',value:c.criteria.map(r=>`${r.name} | ${r.weight}`).join('\n'),original:'예시 원문 · '+c.criteria.map(r=>r.name+' '+r.weight+'%').join(' / ')},
+    {key:'curriculum',label:'16주 수업 일정',value:c.curriculum.join('\n'),original:'예시 원문 · '+c.curriculum.join(' → ')},
   ].map(r=>({...r,selected:true})) as ImportRow[]
 }
 export function CourseSettings({course,initialDraft,onDraftChange,onSave,onCreate}:{course:Course;initialDraft:Course;onDraftChange:(c:Course)=>void;onSave:(c:Course)=>void;onCreate:()=>void}) {
-  const [draft,setDraft]=useState(()=>structuredClone(initialDraft)),[category,setCategory]=useState(0),[method,setMethod]=useState(''),[source,setSource]=useState(''),[rows,setRows]=useState<ImportRow[]>([]),[notice,setNotice]=useState(''),[error,setError]=useState(''),[dirty,setDirty]=useState(()=>JSON.stringify(initialDraft)!==JSON.stringify(course)),[files,setFiles]=useState<string[]>([]),[replacement,setReplacement]=useState('')
+  const {scenario}=useWorkspace()
+  const defaultCourse=scenario.course
+  const {category,setCategory}=useWorkspaceUi()
+  const [draft,setDraft]=useState(()=>structuredClone(initialDraft)),[method,setMethod]=useState(''),[source,setSource]=useState(''),[rows,setRows]=useState<ImportRow[]>([]),[notice,setNotice]=useState(''),[error,setError]=useState(''),[dirty,setDirty]=useState(()=>JSON.stringify(initialDraft)!==JSON.stringify(course)),[files,setFiles]=useState<string[]>([]),[replacement,setReplacement]=useState('')
   const [reviewOpen,setReviewOpen]=useState(false)
   const dialog=useRef<HTMLDialogElement>(null),upload=useRef<HTMLInputElement>(null)
   function change<K extends keyof Course>(key:K,value:Course[K]) {const next={...draft,[key]:value};setDraft(next);onDraftChange(next);setDirty(true);setNotice('');setError('')}
@@ -46,7 +51,7 @@ export function CourseSettings({course,initialDraft,onDraftChange,onSave,onCreat
     if(!draft.goals.length||draft.goals.some(x=>!x.trim())||draft.curriculum.some(x=>!x.trim())){setError('학습 목표와 수업 일정의 빈 내용을 입력하거나 삭제해 주세요.');return}
     if(!draft.criteria.length||draft.criteria.some(c=>!c.name.trim()||!Number.isFinite(c.weight)||c.weight<=0)||draft.criteria.reduce((n,c)=>n+c.weight,0)!==100){setError('평가 요소를 입력하고 비율 합계를 100%로 맞춰 주세요.');return}
     if(!draft.guidance.length){setError('허용할 가이던스를 하나 이상 선택해 주세요.');return}
-    try {localStorage.setItem('trace-course-v1',JSON.stringify(draft));onSave(structuredClone(draft));setDirty(false);setError('');setNotice('과목 설정을 저장했습니다. 새 프로젝트의 기본값으로 사용할 수 있습니다.')}catch{setError('저장 공간을 사용할 수 없습니다. 다시 시도해 주세요.')}
+    try {localStorage.setItem(workspaceKey(scenario.id,'trace-course-v1'),JSON.stringify(draft));onSave(structuredClone(draft));setDirty(false);setError('');setNotice('과목 설정을 저장했습니다. 새 프로젝트의 기본값으로 사용할 수 있습니다.')}catch{setError('저장 공간을 사용할 수 없습니다. 다시 시도해 주세요.')}
   }
   function stringList(key:'goals'|'standards'|'ncs'|'competencies') {return <div className="course-edit-list">{draft[key].map((value,i)=><div key={i}><input aria-label={`${key==='goals'?'학습 목표':key==='standards'?'성취기준':key==='competencies'?'핵심 역량':'NCS 능력단위'} ${i+1}`} value={value} onChange={e=>change(key,draft[key].map((s,j)=>j===i?e.target.value:s))}/><button className="icon-button remove" aria-label={`${key} ${i+1} 삭제`} onClick={()=>change(key,draft[key].filter((_,j)=>i!==j))}><span className="icon icon-close"/></button></div>)}<button className="text-button" onClick={()=>change(key,[...draft[key],''])}>+ 직접 추가</button></div>}
   return <div className="course-settings">
@@ -54,7 +59,7 @@ export function CourseSettings({course,initialDraft,onDraftChange,onSave,onCreat
     <div className="settings-start">{[['system','학교 시스템에서 불러오기','학사 · LMS · NEIS','grid'],['document','문서로 설정하기','수업계획서 · 평가계획 · NCS','download'],['manual','직접 설정하기','기본 정보부터 차근차근','edit']].map(([id,title,desc,icon],i)=><button key={id} className={`settings-start-card start-${i}`} aria-pressed={method===id} onClick={()=>{setMethod(id);setError('');if(id==='manual'){setCategory(0);document.getElementById('course-editor')?.scrollIntoView({behavior:'instant'})}}}><span className="coverage-orb"><span className={`icon icon-${icon}`}/></span><span><strong>{title}</strong><small>{desc}</small></span><span className="icon icon-right"/></button>)}</div>
     <div className="import-flow" aria-label="설정 적용 흐름"><span>자료 불러오기</span><span>AI 분석 · 분류</span><strong>교수자 확인 · 수정</strong><span>과목 기준으로 저장</span></div>
     {method==='system'&&<section className="panel source-panel"><div className="section-heading"><h2>학교 시스템 연결</h2><span className="count-label">시연 연결</span></div><p>연결된 과목의 기준을 선택해 가져오는 흐름입니다. 실제 기관 계정에는 접속하지 않습니다.</p><div className="system-choices">{['대학 정보시스템','LMS','학사 시스템','NEIS'].map(label=><button className="button secondary" key={label} onClick={()=>{setFiles([]);setReplacement('');reviewImport(`${label} 예시`)}}>{label}에서 불러오기</button>)}</div></section>}
-    {method==='document'&&<section className="panel source-panel"><div className="section-heading"><h2>{replacement?'기준 문서 다시 업로드':'문서로 과목 설정'}</h2><span className="count-label">{replacement||'예시 분석'}</span></div><div className="course-dropzone" onDragOver={e=>e.preventDefault()} onDrop={e=>{e.preventDefault();selectFiles(e.dataTransfer.files)}}><span className="icon icon-download"/><strong>수업에 쓰던 문서를 여기에 놓아주세요</strong><span>교육과정 · 강의계획서 · 평가 규정 · 자체 루브릭</span><small>HWP · HWPX · PDF · DOCX · XLSX / 파일당 10MB</small><button className="button secondary" onClick={()=>upload.current?.click()}>문서 선택</button><button className="text-button" onClick={()=>{setFiles(['2026_네트워크실습_수업계획서.pdf']);setNotice('예시 문서가 선택되었습니다.')}}>예시 문서로 체험</button></div>{files.length>0&&<div className="analysis-result"><div><strong>분석 예시 준비</strong><p>{files.join(' · ')}</p><small>과목 정보 · 목표 5개 · 성취기준 3개 · 평가 요소 5개 · 수업 일정 16주</small><p className="course-demo-note">파일 형식과 이름만 확인하며, 내용 분석은 준비된 예시로 보여 줍니다.</p></div><button className="button primary" onClick={()=>reviewImport(files.join(', '))}>분석 결과 확인</button></div>}</section>}
+    {method==='document'&&<section className="panel source-panel"><div className="section-heading"><h2>{replacement?'기준 문서 다시 업로드':'문서로 과목 설정'}</h2><span className="count-label">{replacement||'예시 분석'}</span></div><div className="course-dropzone" onDragOver={e=>e.preventDefault()} onDrop={e=>{e.preventDefault();selectFiles(e.dataTransfer.files)}}><span className="icon icon-download"/><strong>수업에 쓰던 문서를 여기에 놓아주세요</strong><span>교육과정 · 강의계획서 · 평가 규정 · 자체 루브릭</span><small>HWP · HWPX · PDF · DOCX · XLSX / 파일당 10MB</small><button className="button secondary" onClick={()=>upload.current?.click()}>문서 선택</button><button className="text-button" onClick={()=>{setFiles([scenario.course.name+'_수업계획서.pdf']);setNotice('예시 문서가 선택되었습니다.')}}>예시 문서로 체험</button></div>{files.length>0&&<div className="analysis-result"><div><strong>분석 예시 준비</strong><p>{files.join(' · ')}</p><small>과목 정보 · 목표 {defaultCourse.goals.length}개 · 성취기준 {defaultCourse.standards.length}개 · 평가 요소 {defaultCourse.criteria.length}개 · 수업 일정 {defaultCourse.curriculum.length}주</small><p className="course-demo-note">파일 형식과 이름만 확인하며, 내용 분석은 준비된 예시로 보여 줍니다.</p></div><button className="button primary" onClick={()=>reviewImport(files.join(', '))}>분석 결과 확인</button></div>}</section>}
     <input ref={upload} type="file" hidden accept=".pdf,.hwp,.hwpx,.docx,.xlsx" multiple={!replacement} onChange={e=>{selectFiles(e.target.files);e.target.value=''}}/>
     {notice&&<p role="status" className="settings-notice">{notice}</p>}{error&&!reviewOpen&&<p role="alert" className="error-message">{error}</p>}
     <div id="course-editor" className="course-editor"><nav className="settings-tabs" aria-label="과목 설정 카테고리">{categories.map((c,i)=><button key={c} aria-pressed={category===i} onClick={()=>setCategory(i)}>{c}</button>)}</nav><section className="panel settings-form"><div className="section-heading"><h2>{categories[category]}</h2><span className="count-label">과목 기본값</span></div>

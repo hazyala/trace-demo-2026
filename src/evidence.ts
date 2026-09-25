@@ -6,9 +6,9 @@ export function criterionEstimate(criterion: string, weight: number, records: Ev
   let ratio: number | null = null
   let ids: string[] = []
   let reason = '이 평가 요소에 맞는 세부 기준과 근거를 먼저 연결해 주세요.'
-  if (/문제 이해/.test(criterion)) { ratio = .9; ids = ['E01','E02']; reason = '실패 구간을 좁히고 실제 설정과 가설을 대조함. 다른 조건의 설명은 추가 확인.' }
+  if (/문제 이해/.test(criterion)) { ratio = .9; ids = ['E01','E02']; reason = '문제 범위를 좁히고 실제 자료와 가설을 대조함. 다른 조건의 설명은 추가 확인.' }
   else if (/해결 과정|문제 해결/.test(criterion)) { ratio = has('E03') ? .8 : null; ids = has('E03') ? ['E02','E03'] : ['E02','E05']; reason = has('E03') ? '원인 가설에 맞는 수정안과 이유가 연결됨. 대안 비교는 보완 필요.' : '진단 계획만 있으며 실제 수정 근거는 아직 없음.' }
-  else if (/검증/.test(criterion)) { ratio = has('E04') ? .8 : null; ids = has('E04') ? ['E04','E05'] : ['E05']; reason = has('E04') ? '두 단말의 양방향 결과를 비교함. 다른 조건의 재검증은 남아 있음.' : '실행 결과 미수집. 계획만으로 검증 충족분을 산정하지 않음.' }
+  else if (/검증/.test(criterion)) { ratio = has('E04') ? .8 : null; ids = has('E04') ? ['E04','E05'] : ['E05']; reason = has('E04') ? '명시한 조건별 실행 결과를 비교함. 다른 조건의 재검증은 남아 있음.' : '실행 결과 미수집. 계획만으로 검증 충족분을 산정하지 않음.' }
   else if (/산출물/.test(criterion)) { ratio = has('E03') ? .6 : .3; ids = ['E05']; reason = '과정 문서의 현재 초안만 반영. 최종 보고서 완성도는 추가 확인.' }
   else if (/협업/.test(criterion)) { ratio = .7; ids = ['E05']; reason = '판단과 다음 행동을 팀 문서에 공유함. 역할 간 조율 결과는 추가 확인.' }
   ids = ids.filter(has)

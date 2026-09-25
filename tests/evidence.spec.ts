@@ -41,7 +41,7 @@ test('과정증거에서 원자료를 대조하고 확인을 저장하며 지원
   await page.getByLabel('학생 선택').selectOption('김민준')
   await expect(page.getByLabel('증거 확인 상태')).toHaveValue('미확인')
   await expect(page.getByRole('button', {name:'검증 2',exact:true})).toBeVisible()
-  await expect(page.getByRole('img', {name:'1팀 과제 진행률 72%',exact:true})).toBeVisible()
+  await expect(page.getByRole('img', {name:'1팀 과제 진행률 33%',exact:true})).toBeVisible()
   await expect(page.locator('.student-list')).toHaveCount(0)
   await page.getByLabel('진행 중인 과제').selectOption('vlan')
   await expect(page.locator('.source-layer pre')).toContainText('show vlan brief')

@@ -1,7 +1,7 @@
 export type Mode = '교수자 직접' | 'AI 자동' | '교수자 승인형'
 export type ProjectType = '개인 프로젝트' | '팀 프로젝트'
 export type TeamFormation = '학생 자율 구성' | '교수자 지정' | '자동 균형 배정'
-export const demoStudents = ['김민준','이서연','박도윤','최하은','정우진','한지민','윤서준','강채원','조현우','임수아','신도현','오유나','장시우','권예린','황준서','송다은','안지호','류서현','전민재','홍유진','문태윤','배지안','백승민','노하린']
+export const demoStudents = ['김민준','이서연','박도윤','최하은','정우진','한지민','윤서준','강채원','조현우','임수아','신도현','오유나','장시우','권예린','황준서','송다은','안지호','류서현','유송민','홍유진','문태윤','배지안','백승민','노하린']
 export type Assignment = {
   directAnswers?: boolean;
   environment: { kind: 'workspace' | 'network' | 'external'; template: string; url: string; instructions: string };
@@ -72,28 +72,28 @@ export function getTeamGroups(a: Assignment) {
     }),
   }))
 }
-export function readDraft(): Assignment {
+export function readDraft(key=storageKey, initial=initialAssignment): Assignment {
   try {
-    const a = JSON.parse(localStorage.getItem(storageKey) || 'null')
+    const a = JSON.parse(localStorage.getItem(key) || 'null')
     if (a) {
-      if (!a.environment || !['workspace','network','external'].includes(a.environment.kind) || !['template','url','instructions'].every(k => typeof a.environment[k] === 'string')) a.environment = { ...initialAssignment.environment }
-      a.projectType ??= initialAssignment.projectType
-      a.teamFormation ??= initialAssignment.teamFormation
-      a.teamSize ??= initialAssignment.teamSize
-      a.teamDeadline ??= initialAssignment.teamDeadline
-      a.approvalRequired ??= initialAssignment.approvalRequired
-      a.teamAssignments ??= structuredClone(initialAssignment.teamAssignments)
+      if (!a.environment || !['workspace','network','external'].includes(a.environment.kind) || !['template','url','instructions'].every(k => typeof a.environment[k] === 'string')) a.environment = { ...initial.environment }
+      a.projectType ??= initial.projectType
+      a.teamFormation ??= initial.teamFormation
+      a.teamSize ??= initial.teamSize
+      a.teamDeadline ??= initial.teamDeadline
+      a.approvalRequired ??= initial.approvalRequired
+      a.teamAssignments ??= structuredClone(initial.teamAssignments)
     }
-    if (!a || !['title','description','start','end','difficulty','situation','timing','manualGuidance','intervention'].every(k => typeof a[k] === 'string') || !modes.includes(a.mode)) return structuredClone(initialAssignment)
-    if (!['개인 프로젝트','팀 프로젝트'].includes(a.projectType) || !['학생 자율 구성','교수자 지정','자동 균형 배정'].includes(a.teamFormation) || typeof a.teamSize !== 'number' || typeof a.teamDeadline !== 'string' || typeof a.approvalRequired !== 'boolean' || !a.teamAssignments || typeof a.teamAssignments !== 'object') return structuredClone(initialAssignment)
-    if (!['goals','requirements','situations'].every(k => Array.isArray(a[k]) && a[k].every((x: unknown) => typeof x === 'string'))) return structuredClone(initialAssignment)
-    if (!Array.isArray(a.outputs) || !a.outputs.every((x: Assignment['outputs'][number]) => x && typeof x.name === 'string' && typeof x.format === 'string' && typeof x.required === 'string')) return structuredClone(initialAssignment)
-    if (!Array.isArray(a.criteria) || !a.criteria.every((x: Assignment['criteria'][number]) => x && typeof x.name === 'string' && typeof x.weight === 'number')) return structuredClone(initialAssignment)
-    if (!a.guidance || !modes.every(m => Array.isArray(a.guidance[m]) && a.guidance[m].every((x: unknown) => typeof x === 'string'))) return structuredClone(initialAssignment)
+    if (!a || !['title','description','start','end','difficulty','situation','timing','manualGuidance','intervention'].every(k => typeof a[k] === 'string') || !modes.includes(a.mode)) return structuredClone(initial)
+    if (!['개인 프로젝트','팀 프로젝트'].includes(a.projectType) || !['학생 자율 구성','교수자 지정','자동 균형 배정'].includes(a.teamFormation) || typeof a.teamSize !== 'number' || typeof a.teamDeadline !== 'string' || typeof a.approvalRequired !== 'boolean' || !a.teamAssignments || typeof a.teamAssignments !== 'object') return structuredClone(initial)
+    if (!['goals','requirements','situations'].every(k => Array.isArray(a[k]) && a[k].every((x: unknown) => typeof x === 'string'))) return structuredClone(initial)
+    if (!Array.isArray(a.outputs) || !a.outputs.every((x: Assignment['outputs'][number]) => x && typeof x.name === 'string' && typeof x.format === 'string' && typeof x.required === 'string')) return structuredClone(initial)
+    if (!Array.isArray(a.criteria) || !a.criteria.every((x: Assignment['criteria'][number]) => x && typeof x.name === 'string' && typeof x.weight === 'number')) return structuredClone(initial)
+    if (!a.guidance || !modes.every(m => Array.isArray(a.guidance[m]) && a.guidance[m].every((x: unknown) => typeof x === 'string'))) return structuredClone(initial)
     for (const key of ['situationOptions', 'guidanceOptions'] as const) {
-      if (!Array.isArray(a[key]) || !a[key].every((x: unknown) => typeof x === 'string')) a[key] = [...initialAssignment[key]]
+      if (!Array.isArray(a[key]) || !a[key].every((x: unknown) => typeof x === 'string')) a[key] = [...initial[key]]
     }
     a.outputs = a.outputs.map((out: Assignment['outputs'][number]) => ({ ...out, template: out.template && typeof out.template.name === 'string' && typeof out.template.data === 'string' && out.template.data.startsWith('data:') ? out.template : undefined }))
     return a
-  } catch { return structuredClone(initialAssignment) }
+  } catch { return structuredClone(initial) }
 }

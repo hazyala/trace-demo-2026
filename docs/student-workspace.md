@@ -1,88 +1,54 @@
-# Student workspace surface contract
+# Shared student workspace contract
 
-This is an ordinary extension of TRACE. `DESIGN.md` remains the authoritative visual system; neither it nor `.impeccable/design.json` is changed. Implementation sources are `src/StudentWorkspace.tsx`, `src/student.ts`, `src/student.css`, `src/ProfileSwitch.tsx`, `src/TeamDocuments.tsx`, the role switch in `src/App.tsx`, shared modal styles in `src/app.css`, and the connected summary in `src/TeachingWorkspace.tsx`.
+Both **2학년 네트워크 실습** and **융합 팀 프로젝트** use `StudentWorkspace`, `WorkspaceSidebar`, `navigation.ts`, `KnowledgeConnections`, `ProjectSimulation`, and `TeamDocuments`. `scenarios.ts` supplies their different content. Corresponding screens, cards, fields, navigation labels, and workflows remain identical. `DESIGN.md` and `.impeccable/design.json` are preserved.
 
-## Profile, workspace, and shared shell
+## Role and navigation
 
-The bottom sidebar profile opens an anchored upward dropdown with 강병준 (instructor) and 유송민 (student, team 1). The workspace trigger opens its dropdown below the control. Both use labeled buttons with `aria-expanded`, a labeled region, native keyboard-operable options, outside-pointer dismissal, and Escape dismissal that returns focus to the trigger. Profile choices expose the current selection with `aria-pressed`; these are dropdown disclosures, not modal dialogs or ARIA menus. Switching to 유송민 mounts the student workspace; switching back restores the instructor App context. These are demonstration profiles, not authenticated accounts. The student starts on the team dashboard each time the workspace mounts. The role itself is not persisted across reloads.
+The anchored profile disclosure switches between 강병준 (teacher) and 유송민 (student, team 1); the workspace disclosure selects network or fusion. They are keyboard-operable disclosures with current-choice state, outside dismissal, and Escape handling. Profiles are demonstration roles, not authenticated accounts. The shared sidebar retains TRACE, green navigation, charcoal active rows, collapse behavior, and the tablet drawer.
 
-Reuse the instructor shell: TRACE wordmark, deep green sidebar, charcoal active navigation, mint accents, warm gray canvas, white bordered rounded panels, Korean sans typography, shared primary/secondary buttons, visible focus, and the existing collapse/mobile drawer behavior. Change navigation content for the role without creating another visual identity. The workspace chooser enables both **2학년 네트워크 실습** and **융합 팀 프로젝트**. This document describes the network scenario; the separately stored teacher/student fusion scenario is documented in `docs/fusion-workspace.md`.
-
-Student content uses 22px panel/grid gaps, generally two columns, with wider main columns for the console and conversations. At 1250px gaps tighten; at 900px the main content grids stack; at 600px the overview, chat aside, and feedback columns stack and controls wrap. The console uses a dark, monospace surface to distinguish simulation output. Labels, written status, numeric counts, and accessible SVG descriptions supplement categorical colors. No new global palette or decorative motion is introduced.
-
-## Six student views
-
-| View | Purpose and primary action |
+| Route | Common purpose |
 | --- | --- |
-| 팀 대시보드 | Current mission, five phases, progress, four team members and roles, next steps from prior feedback, current topology, and shared resources. Continue to the lab or open team chat. |
-| 네트워크 실습 | Inspect the PC-A → R1 → R2 → PC-B topology, use the simulated device console, verify both directions, explain the judgment, and explicitly share evidence. |
-| 팀 자료 | Search and filter resources, create/edit team documents, attach local files, download, and share a clickable resource in team chat. |
-| 팀 채팅 | Append a team-visible demo message, review shared resources, and return to the lab. Seeded teammate messages do not represent live participants. |
-| 개인 AI 지원 | Ask a private question, describe observations and attempts, read the automatically selected scripted response, and return to perform the work. |
-| 나의 학습 기록 | Compare task progress, revisit current/prior feedback, keep a personal checklist, revisit private dialogue, and connect observation, judgment, action, verification, and explanation. |
+| `team` · 팀 대시보드 | Brief, five phases, task progress, plan, learning need, team roles, teacher guidance, knowledge connections, and resources |
+| `studio` · 프로젝트 작업실 | 기획·기술 선택 → 수행 보드 → 실행 및 검증 tabs |
+| `documents` · 팀 자료 | Search/filter, create/edit, attach, download, and share a resource |
+| `chat` · 팀 채팅 | Team-visible local messages and clickable shared resources |
+| `ai` · 개인 AI 지원 | Private scripted guidance, current work context, and an explicit teacher-guidance request |
+| `learning` · 나의 학습 기록 | Personal evidence, prior-learning gap, connections, teacher guidance, and saved assessment feedback |
 
-The scoped scenario is 2026 second-semester network fault diagnosis, team 1 with 유송민, 김민수, 이서연, and 박지훈. Other members' activities and earlier learning records are authored examples. This student workspace is not a live projection of instructor edits or a synchronized class database.
+Active role, route, and studio tab survive workspace switching within the app session. Reload starts with the default teacher/network context. Local form drafts and open dialogs do not have the same persistence guarantee as saved records.
 
-## Network simulation contract
+## Planning, connections, and work board
 
-PC-A is the headquarters host at `192.168.10.10`; PC-B is the branch host at `192.168.20.10`. R1 and R2 connect over `10.0.0.0/30`, using `10.0.0.1` and `10.0.0.2`. The seeded fault is R2's headquarters route pointing to `10.0.0.9`.
+The planning form has the same fields in both scenarios: name, audience, problem, minimum scope, language/command system, interface/configuration tool, processing/connection approach, collaboration tools, and the reason connecting existing/new knowledge. Saving requires every field and creates a personal design-process evidence record.
 
-Supported commands are deliberately bounded:
+`KnowledgeConnections` shows learning source, existing knowledge, new need, application/checking action, and status. Students can add a named connection with its source and intended use from planning or learning records. Network connects address/routing/diagnosis/documentation knowledge; fusion connects prior and other coursework with the chosen program. The component and edit form are shared.
 
-- `show ip route` on R1 or R2 shows the scenario's static route. On a PC it asks the student to select a router.
-- `show ip interface brief` shows router addresses and up/up states, or the two PC addresses when a PC is selected.
-- On R2, `ip route 192.168.10.0 255.255.255.0 10.0.0.1` repairs the route and resets forward/reverse verification and the completion flag. Other route values or a different device do not alter configuration.
-- On PC-A, `ping 192.168.20.10` verifies headquarters → branch; on PC-B, `ping 192.168.10.10` verifies branch → headquarters. Before the repair the result is 0/4; after it, 4/4 and the corresponding verification flag is set. Other device/target combinations receive an explanation.
-- Unsupported commands receive visible guidance. Whitespace is normalized; this is a small exact-command simulation, not a general network interpreter.
+The work board has 할 일, 진행 중, 완료 columns and six scenario tasks. A nonblank action/result note completes the selected task and appends evidence attributed to 유송민. Progress is completed tasks divided by six, not a grade or proof that code ran. Recording a task does not bypass the execution panel's verification gate. Other members' activity is authored demonstration data.
 
-No command executes on the operating system or real equipment. Device tabs and shortcuts support discovery without automatically completing the repair. Console output is limited to the latest 40 entries and is transient workspace state.
+## Shared execution and verification
 
-## Progress and evidence sharing
+Both scenarios use the same composition: project nodes, two checking conditions, target selector, bounded command/request console, shortcuts, three result checks, and written explanation before sharing. The console retains the latest 40 entries. No command runs on real equipment, the operating system, or an external API.
 
-Progress reflects authored scenario milestones, not a grade: initial investigation 54%, repaired route 72%, both directions verified 88%, and evidence shared 100%. The five phases are problem understanding, cause analysis, configuration change, verification, and evidence sharing. The same state drives dashboard progress, member status, topology messaging, chat context, and the current-task learning record.
+Network data describes PC-A `192.168.10.10` → R1 `10.0.0.1` → R2 `10.0.0.2` → PC-B `192.168.20.10`. R2 initially has the wrong next hop `10.0.0.9`. Supported route/interface inspection, the exact R2 repair `ip route 192.168.10.0 255.255.255.0 10.0.0.1`, and the two directional PC ping checks model a small diagnostic exercise. A repair resets current directional checks. Students must select the comparison/return-direction conditions and pass the route plus both directional checks.
 
-Sharing requires both successful directional checks and a nonblank explanation. The explicit **검증 근거 팀에 공유** action creates or replaces the named **양방향 복구 검증** resource with the verification results and the student's explanation, appends a team announcement, and marks the current demonstration complete. The generated resource carries stable ID `network-verification`, so renaming it in the document editor preserves its learning-record link and subsequent evidence sharing updates the same resource while retaining its current name. Legacy records can still be found by the original title. The resource opens from team materials and the student's learning record. Sharing is not an actual institution submission or instructor-grade update.
+Fusion uses `GET /schema`, `GET /status`, `TEST registered`, `TEST unknown`, and `TEST privacy`. Registered questions return an authored answer/source. Missing-source and personal-information tests depend on the abstention and masking rules. Fictional outputs do not establish real correctness or privacy protection.
 
-The explanation field is a draft until the share action copies it into the resource. Previously shared resources are snapshots; merely editing the explanation does not rewrite their content. Reapplying the route command requires new verification while retaining earlier materials. These distinctions must remain understandable if the sharing lifecycle is extended.
+Changing either condition clears current checks in both scenarios. Sharing requires all three current checks, both selected conditions, and a nonblank judgment. It stores the explanation and a verification evidence record, completes the test task, updates or creates resource ID `project-verification`, and appends a team announcement. Re-sharing updates the resource body/version and replaces the prior simulation evidence record; earlier shared evidence remains a snapshot until explicitly shared again. Completing all board tasks and passing the simulated experiment remain separate concepts.
 
-## Conversations and guidance
+## Private support and shared guidance
 
-Team messages and private AI messages are separate arrays and appear only in their respective views. Navigating clears the unsent composer text so a private draft cannot accidentally become a team message. Explicit evidence sharing publishes only the evidence summary and explanation, not the private conversation. The instructor view does not render private message text.
+Team messages and private AI messages use separate arrays. The student sees no L1–L4 control; scenario keyword rules choose an illustrative response and store a guidance level/topic/time summary. Navigation and role switching clear unsent composer text. Responses are scripted examples, not a model service.
 
-This is UI and state separation in a local demo, not a server security boundary: both arrays exist in the same browser storage record. New team messages remain local; no real teammate receives them.
+Teachers receive guidance summaries, explicit requests, and shared evidence, never private conversation text. Students send a separate written request when they want teacher review. Saving a teacher guidance proposal for team 1 makes its text visible on the student's dashboard, support view, and learning record. A new student request makes the previous response inactive. Saved evaluation feedback for 유송민 also appears in the learning record. These interactions share local state in the selected scenario; they are not messages sent through an institutional service.
 
-Students no longer see or select L1–L4 labels, response badges, or level-count charts. The private support aside prompts them to describe observations, attempts, and surprises, and shows current practice status. A private submission appends the question and a prepared reply. `selectGuidanceLevel` deterministically selects internal metadata: verified work receives level 1; otherwise tool/command keywords select level 4, conceptual keywords level 3, exploration/comparison keywords level 2, and the fallback is level 1. The first matching rule wins. This is a scripted keyword classifier with a verification-state check, not model inference or production AI policy enforcement.
+## Materials and storage
 
-The internal categories remain confirmation questions, exploration direction, concept hints, and tool hints. The instructor evaluation view includes a read-only **학생 워크스페이스 지원 요약 · 유송민** disclosure with counts for each category. `readStudentGuidanceSummary` counts stored AI responses only, including the seeded response. `connectedGuidance` reads a snapshot when TeachingWorkspace mounts; it is not a continuously synchronized feed. No raw private question or response is shown to the instructor. Counts describe support use, not ability or grades.
+`TeamDocuments` supports text creation/editing, version counters, search/type filtering, local attachments, downloads, and chat links. File attachments are read locally into data URLs, with a 2 MiB per-file limit and a serialized student-state size check. Version numbers do not preserve historical revisions. Chat resource links open the current resource. This is not concurrent collaboration, server upload, document parsing, or cross-device synchronization.
 
-## Learning from prior work
+Saved project data uses `trace-project-network-v2` or `trace-project-fusion-v2`. It includes plan, connections, tasks, evidence, experiment explanation, materials, conversations, guidance summaries, requests, and shared feedback. Legacy student/fusion keys can seed migration but are no longer the write targets. Teacher course, assignment, evidence-confirmation, and review keys are separately scoped with `workspaceKey`; see [the common scenario contract](fusion-workspace.md).
 
-The learning view includes seeded IP-address-design and VLAN-task completion bars alongside the current progress. Switching between current routing work and the prior VLAN task changes the strengths, feedback, and evidence-stage summary. Prior feedback calls out verification in only one direction. The dashboard carries that lesson into the next action, and three persistent personal checklist items encourage a written cause hypothesis, both directions of verification, and separation of an AI hint from the student's own judgment.
+Explicit save/send/share actions distinguish drafts from saved records. Simulation rules, current checks, command history, open dialogs, work notes, and unsaved input remain transient. Browser storage failure displays a warning. Private-text separation is an interface boundary within browser storage, not server authorization.
 
-Current evidence status combines seeded observation/comparison records with actual demo repair, verification, and explanation state. Do not describe the initial records or feedback as newly inferred from command history. The evidence timeline is a state summary, not a timestamped event audit.
+## Visual and verification boundary
 
-## Persistence and resources
-
-`trace-student-yusongmin-v1` stores route/verification/completion flags, explanation, team/private messages, resources, and checklist selections in browser `localStorage`. Missing or unsuitable stored data falls back to the authored scenario. Mutations update the visible state and attempt to persist; storage failure shows a warning that reload may lose changes.
-
-View selection, selected device, console output, unsubmitted command/message text, open disclosures/dialogs, document edit fields, search/filter selection, and history selection are transient. Persisted learning state reloads after returning from the instructor profile; transient controls restart.
-
-Resources now include seeded mission/configuration/failure records, a report draft, meeting notes, a verification checklist, address notes, and explicitly shared evidence. `resourceSchema: 2` migrates older stored records by retaining their resources and appending missing seeded items by name. Already-migrated resources are not repeatedly reseeded. Migration occurs on read and is persisted with a subsequent state update.
-
-### Team documents and attachments
-
-The team-materials view provides title/author/body search and four filters: all, documents (resources without a data URL), attached files, and verification materials (matching the resource kind). A table shows type, author, modification date, and version, with an empty-state message for no matches.
-
-A centered document dialog supports creation and editing with required title and body. New documents start at v1; edits preserve the resource ID, kind, and other existing metadata while replacing its title/body, incrementing its version number, and updating author/date metadata. Versions are counters, not retained historical revisions. Text resources can be edited and downloaded as `.txt`; attachments retain their original name and locally encoded bytes for download and do not offer text editing.
-
-Multiple selected files are read with FileReader into data URLs and added as attachments. Each file is limited to 2 MiB; the proposed entire serialized student record must remain at or below 3,800,000 JavaScript string characters. This is an approximate local-storage budget, not a 3.8 MB raw-file allowance. Read failures and budget violations show an error. Browser storage failure still follows the visible-state warning described above. No server upload, content parsing, collaborative editing, or cross-device synchronization is implemented.
-
-Sharing a material appends a team-chat message with its resource index and navigates to team chat. A clickable document card opens that resource's current contents; it is not a frozen version attachment. The chat composer offers a route to the materials view for sharing. The lab's evidence-share announcement remains plain text; the evidence itself opens through the materials list and learning record. Private dialogue is never attached by these actions.
-
-## Incumbent comparison
-
-The extension retains TRACE's reference palette, Korean labels, flat rounded panels, categorical learning accents, and local-demo boundary. The six student views are distinct from the instructor assignment preview and retain their own demonstration state. Student navigation rows are locally compacted to accommodate the additional materials view, with tighter spacing on short screens.
-
-There are now shared implementation changes worth recording: App and student controls use Lucide icons for consistent strokes, with decorative student icons hidden from assistive technology. Anchored sidebar dropdowns use a white bordered panel with a restrained overlay shadow. `src/app.css` now supplies a global `dialog:modal` base: centered fixed placement, 24px rounded corners, 28px padding, a thin border, viewport bounds, scrollable overflow, the established dialog shadow, and a dim backdrop. At 600px the dialog treatment reduces to 20px corners and 22px padding. Native modal documents retain their close controls and Escape handling; profile and workspace selectors use the separate anchored disclosure pattern.
-
-These corrections preserve the existing palette and flat ordinary panels but broaden the shared icon and overlay implementation. This surface document records the explicit shared-component exceptions to the incumbent description: Lucide icons, anchored dropdown overlays, and the consolidated modal base. `DESIGN.md` and `.impeccable/design.json` remain untouched; a future global documentation refresh should reconcile those entries without replacing the established palette or ordinary-panel rules.
+The common workspace inherits the existing palette, rounded white panels, compact Korean typography, focus states, tablet drawer, and reduced-motion behavior. Student and studio composition uses the existing student/fusion styles for both data variants. No global visual tokens change. Documentation was checked against the shared source components; runtime tests and screenshot review are separate validation work.

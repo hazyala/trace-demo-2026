@@ -2,6 +2,10 @@
 
 This ordinary extension keeps the TRACE visual system in `DESIGN.md` authoritative. It adds surface-specific composition and behavior without changing that system or `.impeccable/design.json`. Sources checked: `PRODUCT.md`, `DESIGN.md`, `src/CourseDashboard.tsx`, `src/CourseSettings.tsx`, `src/course.ts`, `src/course.css`, and the course integration in `src/App.tsx`.
 
+## One surface contract, two datasets
+
+Network and fusion use the same `WorkspaceSidebar`, `CourseDashboard`, and `CourseSettings`, with identical navigation, chart/card composition, settings categories, and import forms. `scenarios.ts` supplies course names, goals, assignment examples, project titles, and subject-specific context. Workspace switching retains the active role, route, and settings category while loading the selected scenario records. `FusionWorkspace.tsx` is removed; fusion does not have a reduced or separately composed dashboard/settings page.
+
 ## Shared visual language
 
 Keep the existing deep green navigation and primary actions, charcoal active navigation, warm gray canvas, white rounded panels, and mint selected/supporting states. Charts reuse mint, lavender, yellow, rose, and charcoal with visible legends and values. The inherited Korean sans typography, thin borders, focus treatment, and flat panels remain in place. Course-specific layouts use 24px panel padding and 22px primary grid gaps; these are local composition choices, not replacement global tokens.
@@ -19,7 +23,7 @@ The summary panels show project count, the demo roster, teams requiring attentio
 
 ### Scope of the data
 
-The dataset remains the named network-practice scenario: two projects, 24 students, six teams, and week seven. Project selection scopes the charts; period selection affects the weekly trend and AI support statistics only. Team/student selection affects the competency area only. Do not imply that course metadata edits rebuild the roster, fabricate evidence for new competencies, or turn these examples into live analytics. The recent activity panel is a current-class illustrative timeline, not a queried audit log.
+Both data variants use two illustrative projects, 24 students, six teams, and week-seven chart data. Network shows diagnosis/VLAN contexts; fusion shows AI-program planning and user-requirement/technology-selection contexts. These charts remain authored examples rather than analytics computed from the interactive student record. Project selection scopes the charts; period selection affects the weekly trend and AI support statistics only. Team/student selection affects the competency area only. Do not imply that course metadata edits rebuild the roster, fabricate evidence for new competencies, or turn these examples into live analytics. The recent activity panel is a current-class illustrative timeline, not a queried audit log.
 
 ## Settings and reviewed import
 
@@ -38,11 +42,11 @@ Document replacement shows current settings next to new example evidence before 
 
 ## State, persistence, and reuse
 
-Saved course defaults use browser `localStorage` key `trace-course-v1`; unavailable or unsuitable stored data falls back to the seeded course. The App owns a separate `courseDraft`, so edited settings and applied import results survive navigation away from settings and back within the same app session. Unsaved settings do not survive a full reload. Import-dialog edits, selected file names, active category, and import method are transient component state; do not claim session retention for those intermediate controls.
+Saved course defaults use browser `localStorage` key `workspaceKey(id, 'trace-course-v1')`: `trace-course-v1` for network and `fusion-trace-course-v1` for fusion; unavailable or unsuitable stored data falls back to the seeded course. The App owns a separate `courseDraft`, so edited settings and applied import results survive navigation away from settings and back within the same app session. Unsaved settings do not survive a full reload or workspace switch. The selected category survives workspace switching in the current session; it is not a saved course field. Import-dialog edits, selected file names, and import method are transient component state; do not claim session retention for those intermediate controls.
 
 The new-project action is disabled while settings have unsaved changes. It starts a blank title/description and copies saved objectives, evaluation criteria, AI mode, intervention level, guidance choices for each mode, and the direct-answer policy into a new editable assignment draft. Other course metadata and preferences remain course-level settings; direct-answer permission is a saved demo policy, not an implemented answer-generation service. Existing assignment editing can explicitly import saved goals or criteria as needed.
 
-Before starting that new draft, App snapshots the current teaching assignment separately under `trace-teaching-assignment` (with an in-session fallback if persistence fails). Dashboard and teaching views use that ongoing snapshot. Thus creating or editing the next assignment does not replace the ongoing classroom's demonstration data or evidence. Course settings, next-assignment drafting, and ongoing teaching context remain distinct.
+Before starting that new draft, App snapshots the current teaching assignment separately under `workspaceKey(id, 'trace-teaching-assignment')` (with an in-session fallback if persistence fails). Dashboard and teaching views use that ongoing snapshot. Thus creating or editing the next assignment does not replace the ongoing classroom's demonstration data or evidence. Course settings, next-assignment drafting, and ongoing teaching context remain distinct.
 
 ## Incumbent comparison
 

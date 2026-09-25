@@ -17,9 +17,9 @@ export const defaultCourse:Course = {
   criteria:courseCriteria, selfReview:true, peerReview:true,mode:'교수자 승인형',intervention:'보통',guidance:guidanceOptions.slice(0,4),directAnswers:false,
   documents:[{name:'네트워크실습 수업계획서.pdf',type:'수업계획',area:'목표 · 일정',updated:'2026-09-01'},{name:'네트워크실습 평가계획.pdf',type:'평가',area:'평가 기준',updated:'2026-09-01'}],
 }
-export function readCourse():Course {
-  try { const c=JSON.parse(localStorage.getItem('trace-course-v1')||'null'); if(c && typeof c.name==='string' && ['goals','standards','ncs','curriculum','criteria','documents','guidance'].every(k=>Array.isArray(c[k]))) return {...structuredClone(defaultCourse),...c} } catch { /* Use the demo course when storage is unavailable. */ }
-  return structuredClone(defaultCourse)
+export function readCourse(key='trace-course-v1', initial=defaultCourse):Course {
+  try { const c=JSON.parse(localStorage.getItem(key)||'null'); if(c && typeof c.name==='string' && ['goals','standards','ncs','curriculum','criteria','documents','guidance'].every(k=>Array.isArray(c[k]))) return {...structuredClone(initial),...c} } catch { /* Use the demo course when storage is unavailable. */ }
+  return structuredClone(initial)
 }
 export type TeachingTarget = {task?:string;team?:number;student?:string}
 export const dashboardProjects = (title:string) => [
