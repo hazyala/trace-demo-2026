@@ -40,6 +40,23 @@ function App() {
     catch { setError('저장 공간을 사용할 수 없습니다. 브라우저 설정을 확인해 주세요.') }
   }
   function addGoal() { if (!newGoal.trim()) return; update('goals', [...a.goals, newGoal.trim()]); setNewGoal('') }
+  function improveBrief() {
+    if (!a.title.trim() || !a.description.trim()) { setError('과제명과 과제 설명을 먼저 입력해 주세요.'); return }
+    const networkTask = /네트워크|라우팅|장애/.test(`${a.title} ${a.description}`)
+    const title = networkTask ? '교내 네트워크 장애 원인 진단 및 복구 검증' : a.title.includes('검증') ? a.title.trim() : `${a.title.trim()} · 수행 과정과 결과 검증`
+    const description = networkTask
+      ? '실습실 네트워크의 연결 장애를 팀별로 진단하고 복구하세요. 관찰한 증상과 진단 근거를 바탕으로 원인을 좁히고, 해결 과정을 기록한 뒤 복구 전·후 연결 상태를 직접 검증합니다.'
+      : `${a.description.trim()} 수행 과정에서 선택한 방법과 판단 근거를 기록하고, 적용 전·후 결과를 비교하여 해결 여부를 직접 검증하세요.`
+    setA(prev => ({ ...prev, title, description })); setSaved(false); setCreated(false); setError(''); setMessage('AI가 과제 문장을 수행과 검증 중심으로 강화했습니다.')
+  }
+  function recommendRequirements() {
+    if (!a.title.trim() || !a.description.trim()) { setError('요구사항을 추천받기 전에 과제명과 설명을 입력해 주세요.'); return }
+    const networkTask = /네트워크|라우팅|장애/.test(`${a.title} ${a.description}`)
+    const recommendations = networkTask
+      ? ['장애 증상을 재현하고 영향 범위를 확인한 결과를 기록한다.', '두 가지 이상의 진단 도구를 활용하여 원인 후보를 비교한다.', '설정 변경 전·후 상태를 비교하고 복구 결과를 다른 팀원이 재검증한다.']
+      : ['문제 상황을 분석하고 해결에 필요한 조건을 구체적으로 정의한다.', '선택한 해결 방법의 근거와 수행 과정을 단계별로 기록한다.', '적용 전·후 결과를 비교하고 동료가 확인할 수 있는 검증 근거를 남긴다.']
+    update('requirements', [...new Set([...a.requirements, ...recommendations])]); setMessage('과제 내용에 맞는 평가 요구사항을 추가했습니다.')
+  }
   function openSuggestions() {
     if (!a.title.trim()) { setError('목표를 불러오기 전에 과제명을 입력해 주세요.'); return }
     setSelectedGoals([]); setLoading(true); setSuggestions([]); dialog.current?.showModal()
@@ -74,7 +91,7 @@ function App() {
       <div className="workflow"><div className="step-tabs" aria-label="과제 생성 단계">{['과제 설계', 'AI 운영 방식', '학생 미리보기'].map((label,i) => <Fragment key={label}><button className={step === i+1 ? 'current' : step > i+1 ? 'complete' : ''} aria-current={step === i+1 ? 'step' : undefined} onClick={() => changeStep(i+1)}><span>{step > i+1 ? <Icon name="check" /> : i+1}</span>{label}</button>{i < 2 && <span className="step-connector" />}</Fragment>)}</div><span className="step-count">STEP {String(step).padStart(2, '0')} <span>/ 03</span></span></div>
       <form onSubmit={e => { e.preventDefault(); if (step < 3) changeStep(step + 1); else save(true) }} noValidate>
       {step === 1 ? <div className="design-grid">
-        <Section number="01" title="기본 정보" className="basic-panel" action={<span className="subtle">과제의 시작을 정하세요</span>}>
+        <Section number="01" title="기본 정보" className="basic-panel" action={<button type="button" className="text-button improve-button" onClick={improveBrief}><Icon name="settings" />AI로 문장 강화</button>}>
           <div className="field"><label htmlFor="title">과제명 <span className="required-dot">*</span></label><input id="title" value={a.title} onChange={e => update('title', e.target.value)} placeholder="과제명을 입력하세요" /></div>
           <div className="field"><label htmlFor="description">과제 설명</label><textarea id="description" rows={3} value={a.description} onChange={e => update('description', e.target.value)} placeholder="학생이 해결할 문제와 수행 내용을 입력하세요" /></div>
           <div className="basic-bottom"><fieldset><legend>수행 기간</legend><div className="date-range"><input aria-label="시작일" type="date" value={a.start} onChange={e => update('start', e.target.value)} /><span>—</span><input aria-label="종료일" type="date" min={a.start} value={a.end} onChange={e => update('end', e.target.value)} /></div></fieldset><fieldset><legend>난이도</legend><div className="segmented">{['하','중','상'].map(level => <button type="button" key={level} aria-pressed={a.difficulty === level} className={a.difficulty === level ? 'selected' : ''} onClick={() => update('difficulty', level)}>{level}</button>)}</div></fieldset></div>
@@ -90,7 +107,7 @@ function App() {
           <div className="goal-add"><input aria-label="새 과제 목표" placeholder="목표를 직접 입력하세요" value={newGoal} onChange={e => setNewGoal(e.target.value)} onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); addGoal() } }} /><button type="button" className="icon-button" aria-label="목표 추가" disabled={!newGoal.trim()} onClick={addGoal}><Icon name="plus" /></button></div>
           <p className="micro-note">목표를 누르면 수정할 수 있습니다.</p>
         </Section>
-        <Section number="04" title="평가 요구사항" action={<span className="count-label">{a.requirements.length}개 항목</span>}>
+        <Section number="04" title="평가 요구사항" action={<div className="section-actions"><span className="count-label">{a.requirements.length}개 항목</span><button type="button" className="text-button improve-button" onClick={recommendRequirements}><Icon name="settings" />AI로 요구사항 추천</button></div>}>
           <div className="requirements">{a.requirements.map((value, i) => <div className="requirement-row" key={i}><span className="check-marker"><Icon name="check" /></span><textarea rows={2} aria-label={`요구사항 ${i + 1}`} value={value} onChange={e => update('requirements', a.requirements.map((x,j) => j === i ? e.target.value : x))} placeholder="학생이 반드시 수행해야 할 행동이나 조건" /><Remove label={`요구사항 ${i + 1} 삭제`} onClick={() => update('requirements', a.requirements.filter((_,j) => j !== i))} /></div>)}</div><button type="button" className="add-button" onClick={() => update('requirements', [...a.requirements, ''])}><Icon name="plus" />요구사항 추가</button>
         </Section>
         <Section number="05" title="요구 산출물" action={<span className="count-label">{a.outputs.length}개 산출물</span>}>

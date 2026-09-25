@@ -7,6 +7,10 @@ test('과제 편집, 목표 가져오기, 검증, 운영 방식과 저장', asyn
   await expect(page.getByRole('heading', { name: '프로젝트 · 과제 생성' })).toBeVisible()
   await expect(page.getByRole('button', { name: '팀 프로젝트', exact: true })).toHaveAttribute('aria-pressed','true')
   await expect(page.getByRole('button', { name: /학생 자율 구성/ })).toHaveAttribute('aria-pressed','true')
+  await expect(page.getByText('교수자 최종 승인', { exact: true })).toBeVisible()
+  await page.getByRole('button', { name: 'AI로 문장 강화', exact: true }).click()
+  await expect(page.getByLabel('과제명', { exact: false })).toHaveValue('교내 네트워크 장애 원인 진단 및 복구 검증')
+  await expect(page.getByLabel('과제 설명', { exact: true })).toHaveValue(/진단 근거/)
   await page.getByLabel('팀당 인원', { exact: true }).fill('5')
   await expect(page.getByText('5개 팀', { exact: true })).toBeVisible()
   await page.getByRole('button', { name: '개인 프로젝트', exact: true }).click()
@@ -66,9 +70,18 @@ test('시작일과 필수 항목 검증', async ({ page }) => {
   await expect(page.getByRole('alert')).toContainText('과제명')
 })
 
+test('평가 요구사항 AI 추천', async ({ page }) => {
+  await page.goto('/')
+  await page.getByRole('button', { name: 'AI로 요구사항 추천', exact: true }).click()
+  await expect(page.getByLabel('요구사항 4', { exact: true })).toHaveValue('장애 증상을 재현하고 영향 범위를 확인한 결과를 기록한다.')
+  await expect(page.getByLabel('요구사항 5', { exact: true })).toHaveValue('두 가지 이상의 진단 도구를 활용하여 원인 후보를 비교한다.')
+  await expect(page.getByText('6개 항목', { exact: true })).toBeVisible()
+})
+
 test('교수자 지정과 자동 추천 팀 구성', async ({ page }) => {
   await page.goto('/')
   await page.getByRole('button', { name: /교수자 지정/ }).click()
+  await expect(page.getByText('교수자 최종 승인', { exact: true })).toBeHidden()
   await expect(page.getByText('팀별 학생 지정', { exact: true })).toBeVisible()
   await page.locator('.manual-team-cards article').nth(1).getByRole('button', { name: '학생 선택' }).click()
   await expect(page.getByRole('dialog', { name: '2팀 학생 선택' })).toBeVisible()
@@ -76,6 +89,7 @@ test('교수자 지정과 자동 추천 팀 구성', async ({ page }) => {
   await page.getByRole('button', { name: '선택 완료' }).click()
   await expect(page.locator('.manual-team-cards article').nth(1)).toContainText('김민준')
   await page.getByRole('button', { name: /자동 균형 배정/ }).click()
+  await expect(page.getByText('교수자 최종 승인', { exact: true })).toBeHidden()
   await expect(page.getByText('AI 추천 팀 구성', { exact: true })).toBeVisible()
   await expect(page.locator('.recommended-teams article')).toHaveCount(6)
   await page.getByRole('button', { name: 'AI 운영 방식 설정' }).click()
