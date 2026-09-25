@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test'
-import { formatTime, snapshotMinutes, studentEvidence, teachingTeams } from '../src/evidence'
+import { criterionEstimate, formatTime, snapshotMinutes, studentEvidence, teachingTeams } from '../src/evidence'
 
 test('팀·학생 시나리오의 시간과 결과 및 지원 이후 행동이 일치한다', () => {
   for (const team of teachingTeams) {
@@ -67,4 +67,26 @@ test('연결된 실습 환경 설정이 학생 미리보기와 저장에 반영�
   await expect(page.getByRole('dialog')).toContainText('SW1')
   await expect(page.getByRole('dialog')).not.toContainText('R2')
   await expect(page.getByRole('dialog').locator('pre')).toContainText('ping 192.168.10.20')
+})
+
+
+test('추정 충족분은 절대 배점 눈금을 사용하고 근거 미수집은 산정 대기로 표시한다', async ({ page }) => {
+  const records = studentEvidence('이서연','네트워크 설정·검증',2,false).evidence
+  expect(criterionEstimate('문제 이해',20,records).score).toBe(18)
+  expect(criterionEstimate('문제 이해',10,records).score).toBe(9)
+  expect(criterionEstimate('검증',20,records).score).toBeNull()
+  expect(criterionEstimate('새 평가 요소',20,records).score).toBeNull()
+  await page.goto('/')
+  await page.getByRole('button', {name:'학생별 평가 지원',exact:true}).click()
+  const understanding = page.getByRole('row').filter({has:page.getByRole('rowheader', {name:'문제 이해 배점 20점'})})
+  const solving = page.getByRole('row').filter({has:page.getByRole('rowheader', {name:'해결 과정 배점 30점'})})
+  await expect(understanding.getByRole('img')).toHaveAttribute('aria-label','문제 이해 배점 20점 중 AI 추정 18점')
+  const max20 = await understanding.locator('.attainment-track').boundingBox()
+  const max30 = await solving.locator('.attainment-track').boundingBox()
+  const fill18 = await understanding.locator('.attainment-fill').boundingBox()
+  expect(max20!.width/max30!.width).toBeCloseTo(20/30,2)
+  expect(fill18!.width/max30!.width).toBeCloseTo(18/30,2)
+  await expect(page.getByRole('row').filter({has:page.getByRole('rowheader',{name:'검증 배점 20점'})})).toContainText('산정 대기')
+  await understanding.getByRole('button',{name:'E01 근거 보기'}).click()
+  await expect(page.getByRole('heading',{name:'E01 · 장애 구간에 대한 첫 가설'})).toBeVisible()
 })
