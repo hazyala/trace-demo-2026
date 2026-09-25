@@ -210,7 +210,9 @@ input[type=checkbox] { appearance:auto; accent-color:var(--primary); width:17px;
 /* Reference palette, applied to the numbered section markers. */
 .section-number { display:grid; place-items:center; width:38px; height:38px; border-radius:12px; flex-shrink:0; font-size:12px; font-weight:600; color:#3b423c; }
 .tone-1 { background:#cfefea; }.tone-2 { background:#f0dddd; }.tone-3 { background:#f8edcc; }.tone-4 { background:#e4e1f6; }.tone-0 { background:#cfefea; }
-.mobile-close { display:flex; position:absolute; top:9px; right:10px; }
+.mobile-close { display:flex; position:absolute; top:22px; right:20px; width:48px; height:48px; padding:6px; }
+.sidebar-collapse-icon { position:relative; display:flex; align-items:center; justify-content:flex-end; width:31px; height:31px; padding-right:3px; border:2px solid #d0e7df; border-radius:6px; color:#d0e7df; }
+.sidebar-collapse-icon::before { content:''; position:absolute; top:0; bottom:0; left:9px; width:2px; background:#d0e7df; }.sidebar-collapse-icon .icon { width:17px; height:17px; }
 .sidebar-collapsed .sidebar { transform:translateX(-100%); visibility:hidden; }
 .sidebar-collapsed .main { margin-left:0; }
 .sidebar-collapsed .mobile-menu { display:flex; }
@@ -231,7 +233,7 @@ select:not(#course) { appearance:none; background-image:url('/icons/down-dark.sv
 .editable-option button { border:0; background:transparent; color:#3b5d52; display:flex; align-items:center; gap:7px; padding:10px 12px; min-height:44px; font-size:12px; text-align:left; }
 .editable-option .option-remove { padding:0; width:34px; justify-content:center; flex-shrink:0; }
 .option-remove:hover { background:#f0dddd; }.option-remove span,.option-check { width:15px; height:15px; display:block; background:currentColor; mask:url('/icons/close.svg') center/contain no-repeat; flex-shrink:0; }.option-check { mask-image:url('/icons/check.svg'); }
-.option-add { display:flex; align-items:center; gap:12px; max-width:380px; margin-top:14px; }.option-add input { font-size:12px; }.option-add .text-button { min-height:44px; }
+.option-add { display:flex; align-items:center; gap:12px; max-width:380px; margin-top:14px; }.option-add input { font-size:12px; }.option-add .text-button { min-height:44px; }.add-icon { width:15px; height:15px; background:currentColor; mask:url('/icons/plus.svg') center/contain no-repeat; }
 .option-legend { display:flex; align-items:center; justify-content:space-between; gap:16px; width:100%; }
 .auto-button { display:inline-flex; align-items:center; gap:5px; border:0; background:transparent; color:var(--primary); min-height:36px; padding:0 4px; font-size:11px; font-weight:600; white-space:nowrap; }
 .auto-button:hover { text-decoration:underline; text-underline-offset:4px; }.auto-button .icon { width:15px; height:15px; }

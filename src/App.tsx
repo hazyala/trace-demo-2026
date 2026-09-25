@@ -61,7 +61,7 @@ function App() {
     {sidebarOpen && <button className="sidebar-backdrop" aria-label="메뉴 닫기" onClick={() => setSidebarOpen(false)} />}
     <aside className={`sidebar ${sidebarOpen ? 'open' : ''}`} aria-label="수업 메뉴">
       <div className="brand"><span />TRACE</div>
-      <button className="mobile-close icon-button" aria-label="사이드바 닫기" onClick={() => { setSidebarOpen(false); setSidebarCollapsed(true) }}><Icon name="left" /></button>
+      <button className="mobile-close icon-button" aria-label="사이드바 닫기" onClick={() => { setSidebarOpen(false); setSidebarCollapsed(true) }}><span className="sidebar-collapse-icon"><Icon name="left" /></span></button>
       <label className="course-label" htmlFor="course">현재 수업</label>
       <div className="course-select"><select id="course" defaultValue="network"><option value="network">2학년 네트워크 실습</option></select><Icon name="down" /></div>
       <nav>{nav.map((item, i) => <button key={item.label} className={`nav-item ${i === 1 ? 'active' : ''}`} aria-current={i === 1 ? 'page' : undefined} onClick={() => { if (i === 1) { setSidebarOpen(false); changeStep(1) } else setMessage(`${item.label} 화면은 다음 데모에서 연결됩니다.`) }}><span className="nav-icon"><Icon name={item.icon} /></span>{item.label}</button>)}</nav>
