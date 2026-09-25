@@ -3,6 +3,7 @@ export type ProjectType = '개인 프로젝트' | '팀 프로젝트'
 export type TeamFormation = '학생 자율 구성' | '교수자 지정' | '자동 균형 배정'
 export const demoStudents = ['김민준','이서연','박도윤','최하은','정우진','한지민','윤서준','강채원','조현우','임수아','신도현','오유나','장시우','권예린','황준서','송다은','안지호','류서현','전민재','홍유진','문태윤','배지안','백승민','노하린']
 export type Assignment = {
+  directAnswers?: boolean;
   environment: { kind: 'workspace' | 'network' | 'external'; template: string; url: string; instructions: string };
   title: string; description: string; start: string; end: string; difficulty: string;
   projectType: ProjectType; teamFormation: TeamFormation; teamSize: number; teamDeadline: string; approvalRequired: boolean; teamAssignments: Record<string, number>;

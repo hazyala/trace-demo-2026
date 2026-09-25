@@ -1,6 +1,7 @@
-import { useRef, useState } from 'react'
+import { useRef, useState, type Dispatch, type SetStateAction } from 'react'
 import { type Assignment, demoStudents } from './assignment'
 import './teaching.css'
+import type { TeachingTarget } from './course'
 import { EvidenceReview } from './EvidenceReview'
 import { teachingTeams, studentEvidence, snapshotMinutes, formatTime } from './evidence'
 import { MonitoringMap, StageDistribution } from './MonitoringMap'
@@ -18,13 +19,12 @@ function Badge({ value }: { value: string }) { return <span className={`teach-ba
 type Review = { judgments: Record<string, string>; feedback: string }
 function loadReviews(): Record<string, Review> { try { return JSON.parse(localStorage.getItem('trace-reviews') || '{}') || {} } catch { return {} } }
 
-export function TeachingWorkspace({ view, assignment, onNavigate }: { view: TeachingView; assignment: Assignment; onNavigate: (view: TeachingView) => void }) {
-  const [task, setTask] = useState('current')
-  const [teamId, setTeamId] = useState(2)
-  const [student, setStudent] = useState('이서연')
+export function TeachingWorkspace({ view, assignment, onNavigate, initialTarget = {}, decisions, onDecisions: setDecisions }: { view: TeachingView; assignment: Assignment; onNavigate: (view: TeachingView) => void; initialTarget?:TeachingTarget; decisions:Record<string,string>; onDecisions:Dispatch<SetStateAction<Record<string,string>>> }) {
+  const [task, setTask] = useState(initialTarget.task || 'current')
+  const [teamId, setTeamId] = useState(initialTarget.team || 2)
+  const [student, setStudent] = useState(initialTarget.student || '이서연')
   const [query, setQuery] = useState('')
   const [filter, setFilter] = useState('전체')
-  const [decisions, setDecisions] = useState<Record<string, string>>({})
   const [approvedSituations, setApprovedSituations] = useState<Record<string, string>>({})
   const [reviews, setReviews] = useState(loadReviews)
   const [notice, setNotice] = useState('')
