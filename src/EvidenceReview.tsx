@@ -1,14 +1,15 @@
 import { useRef, useState } from 'react'
 import { evidenceStages, guidanceLevels, studentEvidence } from './evidence'
 import type { Assignment } from './assignment'
+import { ProgressRing } from './TeachingCharts'
 
 type Review = { judgments: Record<string, string>; feedback: string }
 type Check = { status: string; note: string }
 function loadChecks(): Record<string, Check> {
   try { return JSON.parse(localStorage.getItem('trace-evidence-checks') || '{}') || {} } catch { return {} }
 }
-export function EvidenceReview({ name, role, team, task, title, criteria, review, onReview, onSave, onTeam }: {
-  name: string; role: string; team: number; task: string; title: string; criteria: Assignment['criteria'];
+export function EvidenceReview({ name, role, team, progress, task, title, criteria, review, onReview, onSave, onTeam }: {
+  name: string; role: string; team: number; progress: number; task: string; title: string; criteria: Assignment['criteria'];
   review: Review; onReview: (next: Partial<Review>) => void; onSave: () => void; onTeam: () => void;
 }) {
   const data = studentEvidence(name, role, team, task === 'vlan')
@@ -24,6 +25,8 @@ export function EvidenceReview({ name, role, team, task, title, criteria, review
   const checkKey = `${task}-${name}-${evidence?.id}`
   const check = checks[checkKey] || { status: '미확인', note: '' }
   const checkedCount = data.evidence.filter(e => checks[`${task}-${name}-${e.id}`]?.status === '확인 완료').length
+  const stageCounts = evidenceStages.map((_, i) => data.evidence.filter(e => e.stage === i).length)
+  const levelCounts = guidanceLevels.map((_, i) => data.guidance.filter(g => g.level === i + 1).length)
   function openEvidence(id: string) {
     setStage(null); setActive(id); setCheckNotice('')
     explorer.current?.scrollIntoView({ behavior: 'instant', block: 'start' })
@@ -41,11 +44,15 @@ export function EvidenceReview({ name, role, team, task, title, criteria, review
     <section className="panel evidence-overview">
       <div className="section-heading"><div className="student-identity"><span className="student-initial" aria-hidden="true">{name.slice(0,1)}</span><div><h2>{name} <span className="student-team-label">{team}팀</span></h2><p>{role}</p></div></div><button className="text-button" onClick={onTeam}>팀 보기</button></div>
       <p className="review-assignment">{title}</p>
+      <div className="review-statistics">
+        <div className="review-stat progress-stat"><h3>팀 과제 진행률</h3><div className="ring-stat-body"><ProgressRing value={progress} label={`${team}팀 과제 진행률`} /><div><strong>{team}팀</strong><span>{!data.hasModification ? '원인 분석 중' : data.incomplete ? '수정 후 검증 대기' : '결과 검증 중'}</span><small>학생 능력 점수와 별개</small></div></div></div>
+        <div className="review-stat evidence-stat"><h3>단계별 과정증거 <strong>{data.evidence.length}<small>개</small></strong></h3><div className="evidence-bar-chart" aria-label="단계별 과정증거 수">{evidenceStages.map((label,i)=><button key={label} onClick={()=>{setStage(i);setActive('');explorer.current?.scrollIntoView({behavior:'instant'})}} aria-label={`${label} 근거 ${stageCounts[i]}개 보기`}><strong>{stageCounts[i]}</strong><span className="evidence-bar-track"><i className={`chart-fill-${i}`} style={{height:`${stageCounts[i]/Math.max(...stageCounts,1)*100}%`}} /></span><small>{label}</small></button>)}</div></div>
+        <div className="review-stat check-stat"><h3>교수자 근거 확인</h3><div className="ring-stat-body"><ProgressRing value={checkedCount/data.evidence.length*100} label="교수자 근거 확인 비율" tone="lavender" center={`${checkedCount}/${data.evidence.length}`} /><div><strong>{data.evidence.length-checkedCount}개 남음</strong><span>확인 완료 {checkedCount}개</span><button className="text-button" onClick={()=>openEvidence(data.evidence.find(e=>checks[`${task}-${name}-${e.id}`]?.status!=='확인 완료')?.id || 'E01')}>근거 검토하기</button></div></div></div>
+      </div>
       <div className="review-overview-line"><h3>문제해결 과정</h3><span>{!data.hasModification ? '수정안 선택과 검증 근거 확인 필요' : data.incomplete ? '수정 후 검증 근거 확인 필요' : '재검증 기록까지 수집됨'}</span></div>
       <div className="process-track" aria-label="학생 문제해결 단계">
         {evidenceStages.map((label,i) => <button key={label} className={`process-node ${!data.evidence.some(e=>e.stage===i) ? 'pending' : 'observed'}`} onClick={() => { setStage(i); setActive(''); explorer.current?.scrollIntoView({ behavior:'instant' }) }}><span className="process-dot">{i+1}</span><strong>{label}</strong><small>{!data.evidence.some(e=>e.stage===i) ? '자료 미수집' : `${data.evidence.filter(e => e.stage === i).length}개 근거`}</small></button>)}
       </div>
-      <div className="evidence-summary-strip"><span>과정증거 <strong>{data.evidence.length}개</strong></span><span>교수자 확인 <strong>{checkedCount}/{data.evidence.length}</strong></span><span>지원 후 행동 <strong>{!data.hasModification ? '수정안 검토 대기' : data.incomplete ? '검증 대기' : '재검증 수행'}</strong></span></div>
       <nav className="review-jump" aria-label="평가 검토 바로가기"><a href="#learning-evidence">과정증거 열기</a><a href="#guidance-history">L1–L4 지원 이력</a><a href="#teacher-review">교수자 평가</a></nav>
     </section>
     <div className="insight-pair">
@@ -70,16 +77,16 @@ export function EvidenceReview({ name, role, team, task, title, criteria, review
       </div>
     </section>
     <section id="guidance-history" className="panel guidance-panel"><div className="section-heading"><h2>L1–L4 가이던스 흐름</h2><span className="count-label">지원 수준 · 능력 점수 아님</span></div><p className="section-note">막힐 때는 지원을 넓히고, 스스로 진행하면 확인 질문으로 줄입니다.</p>
-      <div className="guidance-visual"><div className="guidance-chart"><svg viewBox="0 0 560 215" role="img" aria-label={data.guidance.map(g=>`${g.time} L${g.level} ${guidanceLevels[g.level-1]}`).join(', ')}>{[4,3,2,1].map((level,i)=><g key={level}><text x="0" y={24+i*46}>L{level}</text><line x1="35" x2="540" y1={20+i*46} y2={20+i*46} /></g>)}<path d={data.guidance.map((g,i)=>`${i===0?'M':'H'} ${55+i*(465/(data.guidance.length-1))}${i===0?` ${158-(g.level-1)*46}`:` V ${158-(g.level-1)*46}`}`).join(' ')} />{data.guidance.map((g,i)=><g key={i}><circle className={i===supportIndex?'active':''} cx={55+i*(465/(data.guidance.length-1))} cy={158-(g.level-1)*46} r={i===supportIndex?7:5} /><text x={55+i*(465/(data.guidance.length-1))} y="199" textAnchor="middle">{g.time}</text></g>)}</svg></div>
-      <div className="level-legend">{guidanceLevels.map((label,i)=><div key={label}><b className={`level-label level-${i+1}`}>L{i+1}</b><span>{label}</span><strong>{data.guidance.filter(g=>g.level===i+1).length}회</strong></div>)}</div></div>
+      <div className="guidance-visual"><div className="guidance-chart"><h3>지원 수준의 변화 <span>총 {data.guidance.length}회</span></h3><svg viewBox="0 0 620 248" role="img" aria-label={data.guidance.map(g=>`${g.time} L${g.level} ${guidanceLevels[g.level-1]}`).join(', ')}>{[4,3,2,1].map((level,i)=><g key={level}><rect className={`chart-band-${level}`} x="42" y={10+i*50} width="565" height="44" rx="7" /><text x="4" y={37+i*50}>L{level}</text><line x1="42" x2="607" y1={32+i*50} y2={32+i*50} /></g>)}{data.guidance.slice(1).map((g,i)=><path key={i} className={`chart-stroke-${data.guidance[i].level}`} d={`M ${64+i*520/(data.guidance.length-1)} ${182-(data.guidance[i].level-1)*50} H ${64+(i+1)*520/(data.guidance.length-1)} V ${182-(g.level-1)*50}`} />)}{data.guidance.map((g,i)=><g key={i}><circle className={`chart-dot-${g.level} ${i===supportIndex?'active':''}`} cx={64+i*520/(data.guidance.length-1)} cy={182-(g.level-1)*50} r={i===supportIndex?9:6} /><text x={64+i*520/(data.guidance.length-1)} y="231" textAnchor="middle">{g.time}</text></g>)}</svg></div>
+        <div className="guidance-distribution"><h3>수준별 지원 비중</h3><div className="support-stacked-bar" role="img" aria-label={guidanceLevels.map((label,i)=>`L${i+1} ${label} ${levelCounts[i]}회`).join(', ')}>{levelCounts.map((count,i)=>count>0&&<span key={i} className={`chart-fill-${i}`} style={{flex:count}} />)}</div><div className="level-legend">{guidanceLevels.map((label,i)=><div key={label}><b className={`level-label level-${i+1}`}>L{i+1}</b><div className="level-bar-label"><span>{label}</span><span className="level-bar-track"><i className={`chart-fill-${i}`} style={{width:`${levelCounts[i]/data.guidance.length*100}%`}} /></span></div><strong>{levelCounts[i]}회<small>{Math.round(levelCounts[i]/data.guidance.length*100)}%</small></strong></div>)}</div></div></div>
       <p className="evidence-caption">사건 순서대로 표시 · 간격은 실제 경과 시간과 다름</p>
       <div className="guidance-events" aria-label="가이던스 이력 선택">{data.guidance.map((g,i)=><button key={i} aria-pressed={i===supportIndex} onClick={()=>setSupportIndex(i)}><span className={`level-label level-${g.level}`}>L{g.level}</span><time>{g.time}</time></button>)}</div>
       <div className="support-outcome"><div><small>지원이 필요했던 이유</small><strong>{support.reason}</strong><p>{support.support}</p></div><div><small>지원 이후 학생의 행동</small><strong>{support.response}</strong><button className="text-button" onClick={()=>openEvidence(support.evidence)}>{support.evidence} · 연결된 수행 근거 보기</button></div></div>
-      <p className="evidence-caption">개인 AI 채팅 원문은 공개하지 않습니다. 지원 유형과 후속 행동만 요약합니다. 시연 기록에는 직접 답안 제공이 없습니다.</p>
+      <p className="evidence-caption">개인 AI 채팅 원문은 공개하지 않습니다. 지원 유형과 후속 행동만 요약합니다.</p>
     </section>
     <section id="teacher-review" className="panel instructor-evaluation"><div className="section-heading"><h2>교수자 평가와 피드백</h2><span className="count-label">과제에서 설정한 기준</span></div><p className="section-note">증거를 확인한 뒤 판단해 주세요. AI는 평가를 확정하지 않습니다.</p><div className="evaluation-table-scroll"><table className="evaluation-table"><thead><tr><th>평가 요소</th><th>판단 참고 자료</th><th>교수자 판단</th></tr></thead><tbody>{criteria.map((criterion,i)=> {
       const id=/검증/.test(criterion.name)?data.incomplete?'E05':'E04':/협업|산출물/.test(criterion.name)?'E05':/이해/.test(criterion.name)?'E01':data.hasModification?'E03':'E05'
-      return <tr key={`${criterion.name}-${i}`}><td><strong>{criterion.name}</strong><small>{criterion.weight}%</small></td><td><button className="text-button" onClick={()=>openEvidence(id)}>{id} · {/검증/.test(criterion.name)?!data.hasModification?'진단 계획 · 검증 미수집':data.incomplete?'검증 계획 · 결과 미수집':'양방향 검증 기록':/협업|산출물/.test(criterion.name)?'자기 설명·팀 공유':'판단과 수행 근거'}</button></td><td><select aria-label={`${criterion.name} 교수자 판단`} value={review.judgments[criterion.name]||''} onChange={e=>onReview({judgments:{...review.judgments,[criterion.name]:e.target.value}})}><option value="">판단 선택</option>{['우수','충분','적절','보완 필요','판단 보류'].map(v=><option key={v}>{v}</option>)}</select></td></tr>
+      return <tr key={`${criterion.name}-${i}`}><td><strong>{criterion.name}</strong><span className="criterion-weight"><span className="weight-track" aria-hidden="true"><i className={`chart-fill-${i%4}`} style={{width:`${Math.max(0,Math.min(100,criterion.weight))}%`}} /></span><small>{criterion.weight}%</small></span></td><td><button className="text-button" onClick={()=>openEvidence(id)}>{id} · {/검증/.test(criterion.name)?!data.hasModification?'진단 계획 · 검증 미수집':data.incomplete?'검증 계획 · 결과 미수집':'양방향 검증 기록':/협업|산출물/.test(criterion.name)?'자기 설명·팀 공유':'판단과 수행 근거'}</button></td><td><select aria-label={`${criterion.name} 교수자 판단`} value={review.judgments[criterion.name]||''} onChange={e=>onReview({judgments:{...review.judgments,[criterion.name]:e.target.value}})}><option value="">판단 선택</option>{['우수','충분','적절','보완 필요','판단 보류'].map(v=><option key={v}>{v}</option>)}</select></td></tr>
     })}</tbody></table></div><div className="field feedback-field"><label htmlFor="instructor-feedback">교수자 피드백</label><textarea id="instructor-feedback" rows={3} placeholder="잘한 점을 근거와 함께 설명하고 다음 확인 질문을 남겨 주세요." value={review.feedback} onChange={e=>onReview({feedback:e.target.value})} /></div><div className="review-save"><span>학생별로 이 브라우저에 저장됩니다.</span><button className="button primary" onClick={onSave}>평가 저장</button></div></section>
   </>
 }

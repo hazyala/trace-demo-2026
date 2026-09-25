@@ -187,8 +187,6 @@ input[type=checkbox] { appearance:auto; accent-color:var(--primary); width:17px;
 .guidance-options button { display:flex; align-items:center; justify-content:center; gap:4px; min-height:42px; border:1px solid #e0e6da; background:white; border-radius:9px; padding:9px 13px; font-size:12px; color:#65705e; }
 .guidance-options button.selected { background:var(--mint-soft); border-color:var(--mint-soft); color:var(--primary); }
 .guidance-options .icon { width:15px; height:15px; }
-.disabled-option { display:flex; align-items:center; gap:8px; margin-top:21px; color:#667065; font-size:12px; }
-.disabled-option>span { font-size:10px; background:#f0f2eb; border-radius:5px; padding:3px 6px; }
 .evidence-note { display:flex; align-items:center; gap:15px; padding:23px 15px; }
 .evidence-icon { color:var(--primary); background:var(--mint-soft); border-radius:12px; width:42px; height:42px; display:grid; place-items:center; flex-shrink:0; }
 .evidence-note strong { font-size:13px; font-weight:600; color:#50694f; }
