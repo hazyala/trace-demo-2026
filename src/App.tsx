@@ -3,6 +3,7 @@ import { type Assignment as AssignmentType, courseCriteria, modes, readDraft, st
 import { StudentPreview } from './StudentPreview'
 import { OptionEditor } from './OptionEditor'
 import { TeamBuilder } from './TeamBuilder'
+import { TeachingWorkspace, type TeachingView } from './TeachingWorkspace'
 import './app.css'
 
 type IconName = 'plus' | 'close' | 'check' | 'right' | 'left' | 'down' | 'users' | 'user' | 'settings' | 'edit' | 'list' | 'grid' | 'menu' | 'save' | 'download'
@@ -12,6 +13,7 @@ function Section({ title, number, action, children, className = '' }: { title: s
 function App() {
   const [a, setA] = useState(readDraft)
   const [step, setStep] = useState(1)
+  const [view, setView] = useState<'assignment' | TeachingView>('assignment')
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
   const [message, setMessage] = useState('')
@@ -83,10 +85,11 @@ function App() {
       <button className="mobile-close icon-button" aria-label="사이드바 닫기" onClick={() => { setSidebarOpen(false); setSidebarCollapsed(true) }}><span className="sidebar-collapse-icon"><Icon name="left" /></span></button>
       <label className="course-label" htmlFor="course">현재 수업</label>
       <div className="course-select"><select id="course" defaultValue="network"><option value="network">2학년 네트워크 실습</option></select><Icon name="down" /></div>
-      <nav>{nav.map((item, i) => <button key={item.label} className={`nav-item ${i === 1 ? 'active' : ''}`} aria-current={i === 1 ? 'page' : undefined} onClick={() => { if (i === 1) { setSidebarOpen(false); changeStep(1) } else setMessage(`${item.label} 화면은 다음 데모에서 연결됩니다.`) }}><span className="nav-icon"><Icon name={item.icon} /></span>{item.label}</button>)}</nav>
+      <nav>{nav.map((item, i) => { const active = i === (view === 'assignment' ? 1 : view === 'evaluation' ? 2 : 3); return <button key={item.label} className={`nav-item ${active ? 'active' : ''}`} aria-current={active ? 'page' : undefined} onClick={() => { if ([1,2,3].includes(i)) { setSidebarOpen(false); setView(i === 1 ? 'assignment' : i === 2 ? 'evaluation' : 'monitoring'); window.scrollTo(0,0); if (i === 1) changeStep(1) } else setMessage(`${item.label} 화면은 다음 데모에서 연결됩니다.`) }}><span className="nav-icon"><Icon name={item.icon} /></span>{item.label}</button> })}</nav>
       <div className="profile"><a className="avatar" href="/mypage" aria-label="마이페이지" onClick={e => { e.preventDefault(); window.history.pushState({}, '', '/mypage'); setMessage('마이페이지는 준비 중입니다. 과제 작성을 계속할 수 있어요.') }}><Icon name="user" /></a><div><strong>한국 폴리텍</strong><span>강병준 교수님</span></div></div>
     </aside>
     <main id="main" className="main">
+      {view !== 'assignment' ? <><header className="page-header"><div className="title-row"><button className="mobile-menu icon-button" aria-label="수업 메뉴 열기" onClick={() => { setSidebarOpen(true); setSidebarCollapsed(false) }}><Icon name="menu" /></button><h1>{view === 'monitoring' ? '팀별 모니터링' : '학생별 평가 지원'}</h1></div><p>{view === 'monitoring' ? '팀의 진행 흐름을 살피고, 지금 필요한 개입을 결정하세요.' : '학생의 수행과 이해를 과정증거로 확인하고 평가를 기록하세요.'}</p></header><TeachingWorkspace view={view} assignment={a} onNavigate={setView} /></> : <>
       <header className="page-header"><div className="title-row"><button className="mobile-menu icon-button" aria-label="수업 메뉴 열기" aria-expanded={sidebarOpen} onClick={() => { setSidebarOpen(true); setSidebarCollapsed(false) }}><Icon name="menu" /></button><h1 ref={pageTitle} tabIndex={-1}>프로젝트 · 과제 생성</h1><span className="draft-badge">{created ? '생성 완료' : '작성 중'}</span></div><p>과제를 설계하고, 학생의 수행을 지원할 AI 운영 방식을 정하세요.</p></header>
       <div className="workflow"><div className="step-tabs" aria-label="과제 생성 단계">{['과제 설계', 'AI 운영 방식', '학생 미리보기'].map((label,i) => <Fragment key={label}><button className={step === i+1 ? 'current' : step > i+1 ? 'complete' : ''} aria-current={step === i+1 ? 'step' : undefined} onClick={() => changeStep(i+1)}><span>{step > i+1 ? <Icon name="check" /> : i+1}</span>{label}</button>{i < 2 && <span className="step-connector" />}</Fragment>)}</div><span className="step-count">STEP {String(step).padStart(2, '0')} <span>/ 03</span></span></div>
       <form onSubmit={e => { e.preventDefault(); if (step < 3) changeStep(step + 1); else save(true) }} noValidate>
@@ -124,6 +127,7 @@ function App() {
         </div></section><div className="evidence-note"><span className="evidence-icon"><Icon name="list" /></span><div><strong>과정은 자동으로, Learning Evidence</strong><p>수행 기록 · 수정 과정 · 검증 결과 · AI 활용 과정을 시스템이 자동으로 구조화합니다.</p></div><span className="auto-badge">자동 기록</span></div></div>}
       <div className="form-footer">{error && <p role="alert" className="error-message">{error}</p>}{created && <p role="status" className="success-message"><Icon name="check" />「{a.title}」 과제 생성 완료 · 데모 저장</p>}<div className="footer-inner"><div className="save-state"><span className={saved ? 'saved-dot' : 'unsaved-dot'} />{saved ? '이 브라우저에 저장됨' : '변경사항을 저장해 주세요'}<span className="demo-label">DEMO</span></div><div className="footer-actions">{step > 1 && <button type="button" className="button secondary" onClick={() => changeStep(step - 1)}><Icon name="left" />이전</button>}<button type="button" className="button secondary" onClick={() => save()}><Icon name="save" />임시 저장</button><button type="submit" className="button primary">{step === 1 ? 'AI 운영 방식 설정' : step === 2 ? '학생 화면 미리보기' : created ? '과제 다시 저장' : '과제 생성'}<Icon name={step < 3 ? 'right' : 'check'} /></button></div></div></div>
       </form>
+      </>}
     </main>
     {message && <div className="toast" role="status"><Icon name="check" /><span>{message}</span><button className="icon-button" aria-label="알림 닫기" onClick={() => setMessage('')}><Icon name="close" /></button></div>}
     <dialog ref={dialog} className="goals-dialog"><div className="dialog-heading"><h2>과목 설정에서 목표 불러오기</h2><Remove label="목표 불러오기 닫기" onClick={() => dialog.current?.close()} /></div><p className="dialog-context">2학년 네트워크 실습 <span>· 예시 커리큘럼</span></p><div className="suggestion-summary"><strong>{a.title}</strong><p>과제명과 연관된 학습 목표를 골라보세요.</p></div>{loading ? <div className="loading-suggestions" role="status">과목 커리큘럼에서 관련 목표를 정리하고 있어요…</div> : <div className="suggestion-list">{suggestions.map(s => <label key={s}><input type="checkbox" checked={selectedGoals.includes(s)} onChange={() => setSelectedGoals(selectedGoals.includes(s) ? selectedGoals.filter(x => x !== s) : [...selectedGoals,s])} /><span>{s}</span></label>)}</div>}<p className="micro-note">데모에서는 과제명에 맞춘 예시 추천을 제공합니다.</p><div className="dialog-footer"><button className="button secondary" onClick={() => dialog.current?.close()}>취소</button><button className="button primary" disabled={!selectedGoals.length || loading} onClick={() => { update('goals',[...new Set([...a.goals,...selectedGoals])]); dialog.current?.close(); setMessage('선택한 목표를 추가했습니다.') }}>{selectedGoals.length}개 목표 가져오기</button></div></dialog>
