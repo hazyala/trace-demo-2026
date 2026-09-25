@@ -1,0 +1,5 @@
+import { useRef } from 'react'
+export function ProfileSwitch({student,onSwitch}:{student:boolean;onSwitch:()=>void}) {
+  const dialog=useRef<HTMLDialogElement>(null)
+  return <><button className="profile profile-switch" aria-label="프로필 전환" onClick={()=>dialog.current?.showModal()}><span className="avatar"><img src="/icons/user.svg" alt=""/></span><span><strong>{student?'유송민':'한국 폴리텍'}</strong><span>{student?'학생 · 1팀':'강병준 교수님'}</span></span><span aria-hidden="true">⌃</span></button><dialog ref={dialog} className="profile-dialog"><div className="section-heading"><h2>프로필 전환</h2><button className="text-button" onClick={()=>dialog.current?.close()}>닫기</button></div><p className="section-note">같은 수업을 각자의 화면에서 살펴보세요. 시연용 프로필입니다.</p>{[false,true].map(s=><button key={String(s)} className={`profile-choice ${s===student?'selected':''}`} onClick={()=>{dialog.current?.close();if(s!==student)onSwitch()}}><span className="profile-choice-icon"><img src="/icons/user.svg" alt=""/></span><span><strong>{s?'유송민':'강병준'}</strong><small>{s?'학생 · 네트워크 실습 1팀':'교수자 · 한국 폴리텍'}</small></span><span>{s===student?'현재 프로필':'전환 →'}</span></button>)}</dialog></>
+}

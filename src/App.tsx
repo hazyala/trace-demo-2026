@@ -5,6 +5,8 @@ import { OptionEditor } from './OptionEditor'
 import { TeamBuilder } from './TeamBuilder'
 import { ExecutionEnvironment } from './ExecutionEnvironment'
 import { TeachingWorkspace, type TeachingView } from './TeachingWorkspace'
+import { StudentWorkspace } from './StudentWorkspace'
+import { ProfileSwitch } from './ProfileSwitch'
 import { CourseDashboard } from './CourseDashboard'
 import { CourseSettings } from './CourseSettings'
 import { readCourse, type TeachingTarget } from './course'
@@ -17,6 +19,7 @@ function Remove({ label, onClick }: { label: string; onClick: () => void }) { re
 function Section({ title, number, action, children, className = '' }: { title: string; number: string; action?: ReactNode; children: ReactNode; className?: string }) { return <section className={`panel ${className}`}><div className="section-heading"><h2><span className={`section-number tone-${Number(number) % 5}`}>{number}</span>{title}</h2>{action}</div>{children}</section> }
 function App() {
   const [a, setA] = useState(readDraft)
+  const [studentRole,setStudentRole] = useState(false)
   const [step, setStep] = useState(1)
   const [view, setView] = useState<'assignment' | 'dashboard' | 'settings' | TeachingView>('assignment')
   const [course, setCourse] = useState(readCourse)
@@ -90,6 +93,7 @@ function App() {
   const total = a.criteria.reduce((s, c) => s + c.weight, 0)
   const expectedTeams = Math.ceil(24 / Math.max(2, a.teamSize))
   const nav: { label: string; icon: IconName }[] = [{ label: '수업 대시보드', icon: 'grid' }, { label: '프로젝트 · 과제 생성', icon: 'edit' }, { label: '학생별 평가 지원', icon: 'list' }, { label: '팀별 모니터링', icon: 'users' }, { label: '과목 설정', icon: 'settings' }]
+  if(studentRole)return <StudentWorkspace onInstructor={()=>setStudentRole(false)}/>
   return <div className={`app-shell ${sidebarCollapsed ? 'sidebar-collapsed' : ''}`}>
     <a className="skip-link" href="#main">본문으로 이동</a>
     {sidebarOpen && <button className="sidebar-backdrop" aria-label="메뉴 닫기" onClick={() => setSidebarOpen(false)} />}
@@ -99,7 +103,7 @@ function App() {
       <label className="course-label" htmlFor="course">현재 수업</label>
       <div className="course-select"><select id="course" defaultValue="network"><option value="network">{course.name}</option></select><Icon name="down" /></div>
       <nav>{nav.map((item,i) => { const next = (['dashboard','assignment','evaluation','monitoring','settings'] as const)[i];const active=view===next;return <button key={item.label} className={`nav-item ${active?'active':''}`} aria-current={active?'page':undefined} onClick={()=>{setSidebarOpen(false);setView(next);window.scrollTo(0,0);if(next==='assignment')changeStep(1)}}><span className="nav-icon"><Icon name={item.icon}/></span>{item.label}</button> })}</nav>
-      <div className="profile"><a className="avatar" href="/mypage" aria-label="마이페이지" onClick={e => { e.preventDefault(); window.history.pushState({}, '', '/mypage'); setMessage('마이페이지는 준비 중입니다. 과제 작성을 계속할 수 있어요.') }}><Icon name="user" /></a><div><strong>한국 폴리텍</strong><span>강병준 교수님</span></div></div>
+      <ProfileSwitch student={false} onSwitch={()=>setStudentRole(true)}/>
     </aside>
     <main id="main" className="main">
       {view !== 'assignment' ? <><header className="page-header"><div className="title-row"><button className="mobile-menu icon-button" aria-label="수업 메뉴 열기" onClick={()=>{setSidebarOpen(true);setSidebarCollapsed(false)}}><Icon name="menu"/></button><h1>{view==='dashboard'?'수업 대시보드':view==='settings'?'과목 설정':view==='monitoring'?'팀별 모니터링':'학생별 평가 지원'}</h1></div><p>{view==='dashboard'?'수업의 흐름을 보고, 필요한 지원을 연결하세요.':view==='settings'?'교육과정과 평가 기준을 확인하고 다음 과제에 재사용하세요.':view==='monitoring'?'팀의 진행 흐름을 살피고, 지금 필요한 개입을 결정하세요.':'학생의 수행과 이해를 과정증거로 확인하고 평가를 기록하세요.'}</p></header>{view==='dashboard'?<CourseDashboard course={course} assignment={teachingAssignment??a} decisions={decisions} onOpen={openTeaching}/>:view==='settings'?<CourseSettings course={course} initialDraft={courseDraft} onDraftChange={setCourseDraft} onSave={setCourse} onCreate={newProject}/>:<TeachingWorkspace key={teachingKey} initialTarget={teachingTarget} decisions={decisions} onDecisions={setDecisions} view={view} assignment={teachingAssignment??a} onNavigate={setView}/>}</> : <>
