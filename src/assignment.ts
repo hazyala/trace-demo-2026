@@ -1,6 +1,10 @@
 export type Mode = '교수자 직접' | 'AI 자동' | '교수자 승인형'
+export type ProjectType = '개인 프로젝트' | '팀 프로젝트'
+export type TeamFormation = '학생 자율 구성' | '교수자 지정' | '자동 균형 배정'
+export const demoStudents = ['김민준','이서연','박도윤','최하은','정우진','한지민','윤서준','강채원','조현우','임수아','신도현','오유나','장시우','권예린','황준서','송다은','안지호','류서현','전민재','홍유진','문태윤','배지안','백승민','노하린']
 export type Assignment = {
   title: string; description: string; start: string; end: string; difficulty: string;
+  projectType: ProjectType; teamFormation: TeamFormation; teamSize: number; teamDeadline: string; approvalRequired: boolean; teamAssignments: Record<string, number>;
   goals: string[]; requirements: string[];
   outputs: { name: string; format: string; required: string; template?: { name: string; data: string } }[];
   criteria: { name: string; weight: number }[];
@@ -16,6 +20,8 @@ export const courseCriteria = [
   { name: '검증', weight: 20 }, { name: '산출물', weight: 20 }, { name: '협업', weight: 10 },
 ]
 export const initialAssignment: Assignment = {
+  projectType: '팀 프로젝트', teamFormation: '학생 자율 구성', teamSize: 4, teamDeadline: '2026-10-03', approvalRequired: true,
+  teamAssignments: Object.fromEntries(demoStudents.map((student, index) => [student, (index % 6) + 1])),
   situationOptions, guidanceOptions,
   title: '교내 네트워크 장애 진단 및 복구',
   description: '실습실 네트워크에 발생한 연결 장애의 원인을 팀별로 진단하고 복구하세요. 진단 근거와 해결 과정을 기록하고, 복구 후 연결 상태를 검증합니다.',
@@ -39,6 +45,8 @@ export function validateAssignment(a: Assignment, includeAI = false): string | n
   if (!a.title.trim()) return '과제명을 입력해 주세요.'
   if (!a.description.trim()) return '과제 설명을 입력해 주세요.'
   if (!a.start || !a.end || a.start > a.end) return '수행 기간을 확인해 주세요. 종료일은 시작일 이후여야 합니다.'
+  if (a.projectType === '팀 프로젝트' && (!Number.isInteger(a.teamSize) || a.teamSize < 2 || a.teamSize > 10)) return '팀당 인원을 2~10명으로 입력해 주세요.'
+  if (a.projectType === '팀 프로젝트' && !a.teamDeadline) return '팀 구성 완료일을 선택해 주세요.'
   if (!a.goals.length || a.goals.some(x => !x.trim())) return '과제 목표를 한 개 이상 입력해 주세요.'
   if (!a.requirements.length || a.requirements.some(x => !x.trim())) return '비어 있는 평가 요구사항을 입력하거나 삭제해 주세요.'
   if (!a.outputs.length || a.outputs.some(x => !x.name.trim())) return '산출물명을 입력해 주세요.'
@@ -50,10 +58,30 @@ export function validateAssignment(a: Assignment, includeAI = false): string | n
   return null
 }
 export const storageKey = 'trace-assignment-v1'
+export function getTeamGroups(a: Assignment) {
+  const count = Math.ceil(demoStudents.length / Math.max(2, a.teamSize))
+  return Array.from({ length: count }, (_, index) => ({
+    name: `${index + 1}팀`,
+    members: demoStudents.filter((student, studentIndex) => {
+      const stored = a.teamAssignments[student] ?? 0
+      const assigned = a.teamFormation === '자동 균형 배정' ? (studentIndex % count) + 1 : stored > 0 ? ((stored - 1) % count) + 1 : 0
+      return assigned === index + 1
+    }),
+  }))
+}
 export function readDraft(): Assignment {
   try {
     const a = JSON.parse(localStorage.getItem(storageKey) || 'null')
+    if (a) {
+      a.projectType ??= initialAssignment.projectType
+      a.teamFormation ??= initialAssignment.teamFormation
+      a.teamSize ??= initialAssignment.teamSize
+      a.teamDeadline ??= initialAssignment.teamDeadline
+      a.approvalRequired ??= initialAssignment.approvalRequired
+      a.teamAssignments ??= structuredClone(initialAssignment.teamAssignments)
+    }
     if (!a || !['title','description','start','end','difficulty','situation','timing','manualGuidance','intervention'].every(k => typeof a[k] === 'string') || !modes.includes(a.mode)) return structuredClone(initialAssignment)
+    if (!['개인 프로젝트','팀 프로젝트'].includes(a.projectType) || !['학생 자율 구성','교수자 지정','자동 균형 배정'].includes(a.teamFormation) || typeof a.teamSize !== 'number' || typeof a.teamDeadline !== 'string' || typeof a.approvalRequired !== 'boolean' || !a.teamAssignments || typeof a.teamAssignments !== 'object') return structuredClone(initialAssignment)
     if (!['goals','requirements','situations'].every(k => Array.isArray(a[k]) && a[k].every((x: unknown) => typeof x === 'string'))) return structuredClone(initialAssignment)
     if (!Array.isArray(a.outputs) || !a.outputs.every((x: Assignment['outputs'][number]) => x && typeof x.name === 'string' && typeof x.format === 'string' && typeof x.required === 'string')) return structuredClone(initialAssignment)
     if (!Array.isArray(a.criteria) || !a.criteria.every((x: Assignment['criteria'][number]) => x && typeof x.name === 'string' && typeof x.weight === 'number')) return structuredClone(initialAssignment)
