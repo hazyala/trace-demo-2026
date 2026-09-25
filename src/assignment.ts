@@ -3,6 +3,7 @@ export type ProjectType = '개인 프로젝트' | '팀 프로젝트'
 export type TeamFormation = '학생 자율 구성' | '교수자 지정' | '자동 균형 배정'
 export const demoStudents = ['김민준','이서연','박도윤','최하은','정우진','한지민','윤서준','강채원','조현우','임수아','신도현','오유나','장시우','권예린','황준서','송다은','안지호','류서현','전민재','홍유진','문태윤','배지안','백승민','노하린']
 export type Assignment = {
+  environment: { kind: 'workspace' | 'network' | 'external'; template: string; url: string; instructions: string };
   title: string; description: string; start: string; end: string; difficulty: string;
   projectType: ProjectType; teamFormation: TeamFormation; teamSize: number; teamDeadline: string; approvalRequired: boolean; teamAssignments: Record<string, number>;
   goals: string[]; requirements: string[];
@@ -20,6 +21,7 @@ export const courseCriteria = [
   { name: '검증', weight: 20 }, { name: '산출물', weight: 20 }, { name: '협업', weight: 10 },
 ]
 export const initialAssignment: Assignment = {
+  environment: { kind: 'workspace', template: '정적 라우팅 장애 진단', url: '', instructions: '' },
   projectType: '팀 프로젝트', teamFormation: '학생 자율 구성', teamSize: 4, teamDeadline: '2026-10-03', approvalRequired: true,
   teamAssignments: Object.fromEntries(demoStudents.map((student, index) => [student, (index % 6) + 1])),
   situationOptions, guidanceOptions,
@@ -73,6 +75,7 @@ export function readDraft(): Assignment {
   try {
     const a = JSON.parse(localStorage.getItem(storageKey) || 'null')
     if (a) {
+      if (!a.environment || !['workspace','network','external'].includes(a.environment.kind) || !['template','url','instructions'].every(k => typeof a.environment[k] === 'string')) a.environment = { ...initialAssignment.environment }
       a.projectType ??= initialAssignment.projectType
       a.teamFormation ??= initialAssignment.teamFormation
       a.teamSize ??= initialAssignment.teamSize

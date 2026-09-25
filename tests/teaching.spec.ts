@@ -40,5 +40,6 @@ test('교수자 운영 화면의 데스크톱과 태블릿 레이아웃', async 
     await page.getByRole('button', { name:'학생별 평가 지원', exact:true }).click()
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
     await page.screenshot({path:`.impeccable/review/evaluation-${width}.png`, fullPage:true})
+    if (width === 1440) await page.screenshot({path:'.impeccable/review/evaluation-first-viewport.png'})
   }
 })
