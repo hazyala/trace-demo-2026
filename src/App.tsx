@@ -6,6 +6,7 @@ import { OptionEditor } from './OptionEditor'
 import { TeamBuilder } from './TeamBuilder'
 import { ExecutionEnvironment } from './ExecutionEnvironment'
 import { TeachingWorkspace, type TeachingView } from './TeachingWorkspace'
+import { FusionWorkspace } from './FusionWorkspace'
 import { StudentWorkspace } from './StudentWorkspace'
 import { ProfileSwitch } from './ProfileSwitch'
 import { CourseDashboard } from './CourseDashboard'
@@ -21,6 +22,7 @@ function Section({ title, number, action, children, className = '' }: { title: s
 function App() {
   const [a, setA] = useState(readDraft)
   const [studentRole,setStudentRole] = useState(false)
+  const [workspace,setWorkspace] = useState<'network'|'fusion'>('network')
   const [step, setStep] = useState(1)
   const [view, setView] = useState<'assignment' | 'dashboard' | 'settings' | TeachingView>('assignment')
   const [course, setCourse] = useState(readCourse)
@@ -94,7 +96,8 @@ function App() {
   const total = a.criteria.reduce((s, c) => s + c.weight, 0)
   const expectedTeams = Math.ceil(24 / Math.max(2, a.teamSize))
   const nav: { label: string; icon: IconName }[] = [{ label: '수업 대시보드', icon: 'grid' }, { label: '프로젝트 · 과제 생성', icon: 'edit' }, { label: '학생별 평가 지원', icon: 'list' }, { label: '팀별 모니터링', icon: 'users' }, { label: '과목 설정', icon: 'settings' }]
-  if(studentRole)return <StudentWorkspace onInstructor={()=>setStudentRole(false)}/>
+  if(workspace==='fusion')return <FusionWorkspace student={studentRole} onRoleChange={()=>setStudentRole(!studentRole)} onWorkspace={setWorkspace}/>
+  if(studentRole)return <StudentWorkspace onInstructor={()=>setStudentRole(false)} onWorkspace={setWorkspace}/>
   return <div className={`app-shell ${sidebarCollapsed ? 'sidebar-collapsed' : ''}`}>
     <a className="skip-link" href="#main">본문으로 이동</a>
     {sidebarOpen && <button className="sidebar-backdrop" aria-label="메뉴 닫기" onClick={() => setSidebarOpen(false)} />}
@@ -102,7 +105,7 @@ function App() {
       <div className="brand"><span />TRACE</div>
       <button className="mobile-close icon-button" aria-label="사이드바 닫기" onClick={() => { setSidebarOpen(false); setSidebarCollapsed(true) }}><span className="sidebar-collapse-icon"><Icon name="left" /></span></button>
       <label className="course-label" htmlFor="course">현재 수업</label>
-      <div className="course-select"><select id="course" defaultValue="network"><option value="network">{course.name}</option></select><Icon name="down" /></div>
+      <div className="course-select"><select id="course" value={workspace} onChange={e=>setWorkspace(e.target.value as 'network'|'fusion')}><option value="network">{course.name}</option><option value="fusion">융합 팀 프로젝트</option></select><Icon name="down" /></div>
       <nav>{nav.map((item,i) => { const next = (['dashboard','assignment','evaluation','monitoring','settings'] as const)[i];const active=view===next;return <button key={item.label} className={`nav-item ${active?'active':''}`} aria-current={active?'page':undefined} onClick={()=>{setSidebarOpen(false);setView(next);window.scrollTo(0,0);if(next==='assignment')changeStep(1)}}><span className="nav-icon"><Icon name={item.icon}/></span>{item.label}</button> })}</nav>
       <ProfileSwitch student={false} onSwitch={()=>setStudentRole(true)}/>
     </aside>
